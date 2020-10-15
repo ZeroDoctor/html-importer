@@ -11,21 +11,6 @@ class FileReader
 
 private:
 public:
-	std::string getCurrentDir(const char *path)
-	{
-		std::string result = path;
-
-		if (path[0] != 'C')
-		{
-			char buffer[MAX_PATH];
-			GetModuleFileNameA(NULL, buffer, MAX_PATH);
-			std::string::size_type pos = std::string(buffer).find_last_of("\\//");
-			result = std::string((char *)buffer).substr(0, pos) + path;
-		}
-
-		return result;
-	}
-
 	std::vector<std::string> getListFiles(const char* path)
 	{
 		std::vector<std::string> result;

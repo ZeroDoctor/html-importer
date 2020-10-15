@@ -31,13 +31,13 @@ void usage() {
 }
 
 void printTemplate(std::string path, std::string file) {
-	std::filesystem::path temp(path);
-	path = temp.parent_path().string() + "/" + file;
+	std::filesystem::path root(path);
+	std::string src = root.parent_path().string() + "/" + file;
 
 
 	FileReader fr;
 	std::vector<std::string> lines;
-	bool opened = fr.readFile(&lines, path.c_str());
+	bool opened = fr.readFile(&lines, src.c_str());
 	
 	if(opened) {
 		for (auto l : lines) {
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 	}
 
 	FileReader fr;
-	std::vector<std::string> files = fr.getListFiles((std::string(".\\")+dst).c_str());
+	std::vector<std::string> files = fr.getListFiles((std::string("./")+dst).c_str());
 	for (auto file : files) {
 		std::cout << file << std::endl;
 	}
