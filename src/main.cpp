@@ -1,4 +1,3 @@
-// HtmlImporter.cpp : This file contains the 'main' function. Program execution begins and ends there.
 #include <iostream>
 #include <array>
 #include <stack>
@@ -6,7 +5,7 @@
 #include "read_file.hpp"
 #include "thread_pool.hpp"
 #include "pretty_console.hpp"
-#include "parser.hpp"
+#include "dom_parser.hpp"
 #include "argh.h"
 
 namespace ppt = prettycon;
@@ -46,6 +45,7 @@ void printTemplate(std::string path, std::string file) {
 	}
 }
 
+
 int main(int argc, char** argv)
 {
 	auto cmdl = argh::parser(argc, argv);
@@ -78,12 +78,17 @@ int main(int argc, char** argv)
 		for (auto tag : atag)
 		{
 			std::vector<attribute> v_attr;
+			std::string content;
 
 			std::cout << "tag name: " << tag->get_name() << std::endl;
 			tag->get_attributes(v_attr);
+			bool has_content = tag->get_content(content);
 			for (auto attr : v_attr)
 			{
 				std::cout << "\t" << attr.name << " : " << attr.value << " | " << tag->get_line_number() << std::endl;
+				if(has_content) {
+					std::cout << content << std::endl;
+				}
 				printTemplate(files[0], attr.value);
 			}
 		}
@@ -95,6 +100,3 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu

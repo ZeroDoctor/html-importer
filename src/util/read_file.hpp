@@ -21,11 +21,11 @@ public:
 
 		for(const auto & entry : std::filesystem::directory_iterator(path)) {
 
-			std::string file = entry.path().string();
-
 			if(entry.is_directory()) {
-				file += "*";
+				continue;
 			}
+
+			std::string file = entry.path().string();
 
 			result.push_back(file);
 		}

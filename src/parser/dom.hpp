@@ -43,6 +43,7 @@ public:
 	std::vector<Dom *> get_children();
 	bool get_attributes(std::vector<attribute> &attr);
 	bool get_content(std::string &content);
+	void add_content(std::string content);
 	Dom *get_parent();
 
 	~Dom();
@@ -143,6 +144,10 @@ bool Dom::get_content(std::string &content)
 	}
 
 	return false;
+}
+
+void Dom::add_content(std::string content) {
+	self.content += content;
 }
 
 Dom::~Dom()

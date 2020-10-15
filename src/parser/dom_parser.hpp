@@ -18,6 +18,7 @@ bool parse_html(std::vector<std::string> &result, std::string str, char delim, c
 
 	int excpt_found = 0; // number of end tags found
 	std::size_t prev = 0;
+	std::string tag;
 
 	for (std::size_t i = 0; i < str.size(); i++)
 	{
@@ -27,11 +28,15 @@ bool parse_html(std::vector<std::string> &result, std::string str, char delim, c
 
 		if (str[i] == delim && excpt_found % 2 == 0)
 		{
-			std::string test = str.substr(prev, (i - prev) + 1);
-			result.push_back(test); // we want that '>' back
+			tag = str.substr(prev, (i - prev) + 1);
+			result.push_back(tag); // we want that '>' back
 			prev = i + 1;
 			excpt_found = 0;
 		}
+	}
+
+	if(excpt_found != 0) {
+		std::cout << str << " -> tag not found\n"; 
 	}
 
 	return true;
@@ -160,7 +165,7 @@ genericTag parse_tag(std::string tag)
 /**
 	Limitation:
 		- every void element needs the '/' character ex. <img />, <meta />, etc.
-		- will not work if '>' is found on the next line. ex:
+		- will not work if '>' is found on the next line. i.e.:
 			<div
 			class="something"
 			id="anotherthing"
@@ -212,9 +217,13 @@ Dom *create_dom(std::vector<std::string> lines)
 				}
 				else if (last_dom != NULL && ("/" + last_dom->get_name()) == tag.name)
 				{
-					//std::cout << "end: " << tag.name << std::endl;
+					// std::cout << "end: " << j << std::endl;
 					last_dom->end_linenum = i;
 					tag.content += content;
+				
+					if(current_dom != NULL)
+						current_dom->add_content(tag.content);
+					
 					content = "";
 					result = dom.top();
 					dom.pop();
@@ -222,9 +231,11 @@ Dom *create_dom(std::vector<std::string> lines)
 			}
 			else
 			{
-				content += j;
+				std::cout << "found: " << j << std::endl;
+				content += j + "\n";
 			}
 		}
+
 	}
 
 	return result;
