@@ -9,7 +9,6 @@
 class FileReader
 {
 
-private:
 public:
 	std::vector<std::string> getListFiles(const char* path)
 	{
@@ -22,7 +21,7 @@ public:
 		for(const auto & entry : std::filesystem::directory_iterator(path)) {
 
 			if(entry.is_directory()) {
-				continue;
+				continue; // could recurse here
 			}
 
 			std::string file = entry.path().string();

@@ -14,3 +14,4 @@ _deps
 *.vcxproj.*
 *.tlog
 *.sln
+*.dir

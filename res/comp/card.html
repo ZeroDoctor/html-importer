@@ -1,15 +1,49 @@
-<div class="card">
-	<div class="card-image">
-		<img src="img/osx-el-capitan.jpg" class="img-responsive">
+<template>
+	<div type="card" class="card">
+		<div class="card-image">
+			<img src="img/osx-el-capitan.jpg" class="img-responsive" />
+		</div>
+		<div class="card-header">
+			<div class="card-title h5">{{title}}</div>
+			<div class="card-subtitle text-gray">{{subtitle}}</div>
+		</div>
+		<div class="card-body">
+			{{body}}
+		</div>
+		<div class="card-footer">
+			<button class="btn btn-primary">{{footer}}</button>
+		</div>
 	</div>
-	<div class="card-header">
-		<div class="card-title h5">{{title}}</div>
-		<div class="card-subtitle text-gray">{{subtitle}}</div>
+
+	<div type="diff" class="card">
+		<div class="card-image">
+			<img src="img/osx-el-capitan.jpg" class="img-responsive" />
+		</div>
+		<div class="card-header">
+			<div class="card-title h5">{{title}}</div>
+			<div class="card-subtitle text-gray">{{subtitle}}</div>
+		</div>
+		<div class="card-body">
+			{{body}}
+		</div>
+		<div class="card-footer">
+			<button class="btn btn-primary">{{footer}}</button>
+		</div>
 	</div>
-	<div class="card-body">
-		{{body}}
+
+	<div type="another" class="card">
+		<div class="card-image">
+			<img src="img/osx-el-capitan.jpg" class="img-responsive" />
+		</div>
+		<div class="card-header">
+			<div class="card-title h5">{{title}}</div>
+			<div class="card-subtitle text-gray">{{subtitle}}</div>
+		</div>
+		<div class="card-body">
+			{{body}}
+		</div>
+		<div class="card-footer">
+			<button class="btn btn-primary">{{footer}}</button>
+		</div>
 	</div>
-	<div class="card-footer">
-		<button class="btn btn-primary">{{footer}}</button>
-	</div>
-</div>
+</template>

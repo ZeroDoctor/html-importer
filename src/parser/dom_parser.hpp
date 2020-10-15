@@ -79,7 +79,7 @@ bool parse_tag_str(std::size_t &i, std::string &name, std::string tag, char *del
 		i++;
 	}
 
-	return true;
+	return false; // * was true and worked
 }
 
 // parses a tag
@@ -148,7 +148,7 @@ genericTag parse_tag(std::string tag)
 					parse_tag_str(i, name, tag, value_delim, 1); // get value
 
 					attr.value = name;
-					generic_tag.attrs.push_back(attr);
+					generic_tag.attrs[attr.name] = attr.value;
 				}
 			}
 		}
@@ -176,7 +176,7 @@ genericTag parse_tag(std::string tag)
 		- check if potential tags match a void element
 		- continue until '>' is found even on the next line or if another '<' is occurs
 */
-Dom *create_dom(std::vector<std::string> lines)
+Dom *create_dom(std::vector<std::string> lines, std::string file_name)
 {
 	std::vector<std::string> parse_line;
 
@@ -201,7 +201,7 @@ Dom *create_dom(std::vector<std::string> lines)
 				if (tag.name[0] == '!')
 					continue; // could have an array or set of character / words to ignore
 				last_dom = dom.top();
-				tag.line_number = i;
+				tag.start_linenum = i;
 
 				if (tag.is_start)
 				{
@@ -221,8 +221,10 @@ Dom *create_dom(std::vector<std::string> lines)
 					last_dom->end_linenum = i;
 					tag.content += content;
 				
-					if(current_dom != NULL)
+					if(current_dom != NULL) {
 						current_dom->add_content(tag.content);
+						current_dom->set_end_tag_line(i);
+					}
 					
 					content = "";
 					result = dom.top();
@@ -231,12 +233,12 @@ Dom *create_dom(std::vector<std::string> lines)
 			}
 			else
 			{
-				std::cout << "found: " << j << std::endl;
 				content += j + "\n";
 			}
 		}
 
 	}
 
+	result->set_file_name(file_name);
 	return result;
 }
