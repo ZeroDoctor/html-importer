@@ -60,7 +60,18 @@ void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_loa
 
 				simdjson::dom::parser parser;
 				simdjson::dom::object object;
-				auto error = parser.parse(content).get(object);
+				
+				std::string_view test;
+				auto error = parser.parse(content)["body"].get(test);
+				if(error) { std::cerr << error << std::endl; }
+				std::cout << "test: " << test << std::endl;
+
+				simdjson::dom::element elem;
+				auto error = parser.parse(content).get(elem);
+				if(error) {std::cerr << error << std::endl; }
+				elem.type();
+
+				/* auto error = parser.parse(content).get(object);
 				if (error)
 				{
 					std::cerr << error << std::endl;
@@ -69,7 +80,7 @@ void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_loa
 				for (auto [key, value] : object)
 				{
 					std::cout << key << " = " << value << std::endl;
-				}
+				} */
 
 				//print_template(path, file, type, files_load);
 			}
