@@ -242,3 +242,17 @@ Dom *create_dom(std::vector<std::string> lines, std::string file_name)
 	result->set_file_name(file_name);
 	return result;
 }
+
+Dom *parse_create_dom(std::string path)
+{
+	std::vector<std::string> lines;
+	FileReader fr;
+	std::cout << "reading file: " << path << "\n\n";
+	bool opened = fr.readFile(&lines, path.c_str());
+	if (!opened)
+	{
+		std::cout << "failed to read file: " << path << "\n\n";
+		return NULL;
+	}
+	return create_dom(lines, path);
+}

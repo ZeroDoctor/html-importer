@@ -1,5 +1,7 @@
 # html-importer
 
+Note: This repo uses c++17
+
 ## Fixes
 
 - [ ] create a list of void elements

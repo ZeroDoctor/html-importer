@@ -41,8 +41,7 @@ public:
 			if (!infile)
 				return false;
 
-			while (std::getline(infile, line))
-			{
+			while (std::getline(infile, line)) {
 				out_str->push_back(line);
 			}
 

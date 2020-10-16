@@ -3,86 +3,20 @@
 #include <stack>
 #include <chrono>
 
-#include "read_file.hpp"
 #include "thread_pool.hpp"
 #include "pretty_console.hpp"
-#include "dom_parser.hpp"
+#include "html_importer.hpp"
 #include "argh.h"
 
 #define TSIZE 7
 
 namespace ptc = prettycon;
 
-Dom* parse_create_dom(std::string path)
-{
-	std::vector<std::string> lines;
-	FileReader fr;
-	std::cout << "reading file: " << path << "\n\n";
-	bool opened = fr.readFile(&lines, path.c_str());
-	if (!opened) {
-		std::cout << "failed to read file: " << path << "\n\n";
-		return NULL;
-	}
-	return create_dom(lines, path);
-}
-
 void usage() 
 {
 	ptc::ccout.setColor(ptc::Color::black, ptc::Color::lyellow, ptc::Attribute::mydefault);
 	std::cout << "usage: ihtml dst (dst = folders with *.html)" << std::endl;
 	ptc::ccout.restore();
-}
-
-void print_template(std::string path, std::string file, std::string type, std::unordered_map<std::string, Dom*>& files_load) {
-	if(file == "") {
-		std::cout << "Error: file not found\n";
-		return;
-	}
-
-	std::filesystem::path root(path);
-	std::string src = root.parent_path().string() + "/" + file;
-
-	Dom* dom;
-	if(files_load.find(src) == files_load.end()) {
-		dom = parse_create_dom(src);
-		files_load[src] = dom;
-	} else {
-		dom = files_load[src];
-	}
-	
-	auto tags = dom->find_all("div");
-	for(auto tag : tags)
-	{	
-		std::unordered_map<std::string, std::string> v_attr;
-		bool has_attr = tag->get_attributes(v_attr);
-		if(has_attr && type == v_attr["type"]) {
-			std::string output = type + " / " + v_attr["type"];
-			std::cout << "div of type " + output + " start from: "<< tag->start_linenum << " to " << tag->end_linenum << std::endl;
-		}
-	}
-}
-
-void process_include(std::vector<Dom*> dom, std::string path, std::unordered_map<std::string, Dom*>& files_load) {
-	if (dom.size() > 0)
-	{
-		for (auto tag : dom)
-		{
-			std::unordered_map<std::string, std::string> v_attr;
-			std::string content;
-
-			bool has_attr = tag->get_attributes(v_attr);
-			if(has_attr) 
-			{
-				bool has_content = tag->get_content(content);
-				if(!has_content) continue;
-
-				std::string file = v_attr["path"];
-				std::string type = v_attr["type"];
-
-				print_template(path, file, type, files_load);
-			}
-		}
-	}
 }
 
 
@@ -136,11 +70,8 @@ int main(int argc, char** argv)
 		}
 	}
 
-	std::cout << "processing..." << std::endl;
-	for(auto dom : doms) {
-		files_load[dom->get_file_name()] = dom;
-		process_include(dom->find_all("include"), dom->get_file_name(), files_load); // needs to be async?
-	}
+	HtmlImporter importer(doms, files_load);
+	importer.Init();
 
 	pool.shutdown();
 	ptc::ccout.restore();
