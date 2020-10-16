@@ -1,9 +1,7 @@
-#include <iostream>
 #include <array>
 #include <stack>
 #include <chrono>
 
-#include "thread_pool.hpp"
 #include "pretty_console.hpp"
 #include "html_importer.hpp"
 #include "argh.h"
@@ -70,8 +68,8 @@ int main(int argc, char** argv)
 		}
 	}
 
-	HtmlImporter importer(doms, files_load);
-	importer.Init();
+	HtmlImporter include(doms, files_load);
+	include.Init();
 
 	pool.shutdown();
 	ptc::ccout.restore();

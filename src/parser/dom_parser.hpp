@@ -1,11 +1,11 @@
 #pragma once
 
 #include <stack>
-
+#include "read_file.hpp"
 #include "dom.hpp"
 
 // parses an html file into potential start, end, or single tags
-bool parse_html(std::vector<std::string> &result, std::string str, char delim, char excpt)
+inline bool parse_html(std::vector<std::string> &result, std::string str, char delim, char excpt)
 {
 	result.clear();
 	std::size_t starttag = str.find('<');
@@ -43,7 +43,7 @@ bool parse_html(std::vector<std::string> &result, std::string str, char delim, c
 }
 
 // checks if we are at the end of a tag
-bool valid_end(std::string potential_end)
+inline bool valid_end(std::string potential_end)
 {
 	int found = 0;
 	std::size_t end_pos = 0;
@@ -67,7 +67,7 @@ bool valid_end(std::string potential_end)
 }
 
 // parses tag name, attributes, or values
-bool parse_tag_str(std::size_t &i, std::string &name, std::string tag, char *delim, int length)
+inline bool parse_tag_str(std::size_t &i, std::string &name, std::string tag, char *delim, int length)
 {
 	while (i < tag.size()) // the file may not be in html format if i < tag.size() is false
 	{
@@ -83,7 +83,7 @@ bool parse_tag_str(std::size_t &i, std::string &name, std::string tag, char *del
 }
 
 // parses a tag
-genericTag parse_tag(std::string tag)
+inline genericTag parse_tag(std::string tag)
 {
 	bool found_tag = 0;
 	bool is_start = false;
@@ -176,7 +176,7 @@ genericTag parse_tag(std::string tag)
 		- check if potential tags match a void element
 		- continue until '>' is found even on the next line or if another '<' is occurs
 */
-Dom *create_dom(std::vector<std::string> lines, std::string file_name)
+inline Dom *create_dom(std::vector<std::string> lines, std::string file_name)
 {
 	std::vector<std::string> parse_line;
 
@@ -243,7 +243,7 @@ Dom *create_dom(std::vector<std::string> lines, std::string file_name)
 	return result;
 }
 
-Dom *parse_create_dom(std::string path)
+inline Dom *parse_create_dom(std::string path)
 {
 	std::vector<std::string> lines;
 	FileReader fr;

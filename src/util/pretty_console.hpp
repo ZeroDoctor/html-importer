@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <windows.h>
+#include <Windows.h>
 
 namespace prettycon
 {
