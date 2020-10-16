@@ -1,5 +1,11 @@
 #include "html_importer.hpp"
 
+namespace sdom = simdjson::dom;
+
+void output() {
+	
+}
+
 void print_template(std::string path, std::string file, std::string type, std::unordered_map<std::string, Dom *> &files_load)
 {
 	if (file == "")
@@ -35,6 +41,23 @@ void print_template(std::string path, std::string file, std::string type, std::u
 	}
 }
 
+void parse_json(std::vector<sdom::object>& result, sdom::element element)
+{
+	switch(element.type()) {
+		case sdom::element_type::ARRAY:
+			for(sdom::element child : sdom::array(element)) {
+				parse_json(result, child);
+			}
+		break;
+		case sdom::element_type::OBJECT:
+			result.push_back(sdom::object(element));	
+		break;
+
+		default:
+			std::cout << "--! Failed to parse element" << std::endl;
+	}
+}
+
 void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_load)
 {
 
@@ -58,29 +81,21 @@ void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_loa
 				std::string file = v_attr["path"];
 				std::string type = v_attr["type"];
 
-				simdjson::dom::parser parser;
-				simdjson::dom::object object;
-				
-				std::string_view test;
-				auto error = parser.parse(content)["body"].get(test);
-				if(error) { std::cerr << error << std::endl; }
-				std::cout << "test: " << test << std::endl;
+				sdom::parser parser;
+				sdom::element elem;
 
-				simdjson::dom::element elem;
 				auto error = parser.parse(content).get(elem);
-				if(error) {std::cerr << error << std::endl; }
-				elem.type();
-
-				/* auto error = parser.parse(content).get(object);
-				if (error)
-				{
-					std::cerr << error << std::endl;
+				if(error) {
+					std::cerr << error << std::endl; 
 					return;
 				}
-				for (auto [key, value] : object)
-				{
-					std::cout << key << " = " << value << std::endl;
-				} */
+				std::vector<sdom::object> vec;
+				parse_json(vec, elem);
+				for (auto obj : vec) {
+					for(auto [key, value] : obj) {
+						std::cout << key << ": " << value << std::endl;
+					}
+				}
 
 				//print_template(path, file, type, files_load);
 			}

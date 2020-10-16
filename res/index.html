@@ -7,22 +7,32 @@
 	<body>
 		
 		<include path="comp/card.html" type="another"> 
+			[
+				{
+					"title": "ANOTHER-Test",
+					"subtitle": "another test for the ages",
+					"body": "whoop whoop whoop",
+					"footer": "sup"
+				},
+				{
+					"title": "ANOTHER-Test",
+					"subtitle": "wow much array very test",
+					"body": "hello there",
+					"footer": "general kenobi"
+				}
+			]
+		</include>
+
+		<include path="comp/card.html" type="diff"> 
 			{
-				"title": "this is a test",
-				"subtitle": "another test for the ages",
+				"title": "DIFF-Test",
+				"subtitle": "another diff for the ages",
 				"body": "whoop whoop whoop",
 				"footer": "sup"
 			}
 		</include>
 
-		<include path="comp/card.html" type="diff"> 
-			{
-				"title": "this is a test",
-				"subtitle": "another test for the ages",
-				"body": "whoop whoop whoop",
-				"footer": "sup"
-			}
-		</include>
+		<include path="comp/card.html" type="card"> </include>
 
 	</body>
 </html>

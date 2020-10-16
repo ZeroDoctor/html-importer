@@ -88,7 +88,17 @@ bool Dom::get_content(std::string &content)
 {
 	try
 	{
-		if (self.content != "")
+		// remove white space
+		std::string cnt = self.content;
+		cnt.erase(
+			std::remove_if(cnt.begin(), cnt.end(), 
+				[](char &c) {
+					return std::isspace<char>(c, std::locale::classic());
+				}
+			), cnt.end());
+		
+		// check if valid content
+		if (cnt != "")
 		{
 			content = self.content;
 			return true;
