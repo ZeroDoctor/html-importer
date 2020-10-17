@@ -67,7 +67,7 @@ inline bool valid_end(std::string potential_end)
 }
 
 // parses tag name, attributes, or values
-inline bool parse_tag_str(std::size_t &i, std::string &name, std::string tag, char *delim, int length)
+inline bool parse_str(std::size_t &i, std::string &name, std::string tag, char *delim, int length)
 {
 	while (i < tag.size()) // the file may not be in html format if i < tag.size() is false
 	{
@@ -92,10 +92,10 @@ inline genericTag parse_tag(std::string tag)
 	struct genericTag generic_tag;
 
 	std::string name = "";
-	char end_delim[] = ">";
-	char start_delim[] = " >";
-	char attr_delim[] = "=/>";
-	char value_delim[] = "\"";
+	char* end_delim = ">";
+	char* start_delim = " >";
+	char* attr_delim = "=/>";
+	char* value_delim = "\"";
 
 	for (std::size_t i = 0; i < tag.size(); i++)
 	{
@@ -108,9 +108,9 @@ inline genericTag parse_tag(std::string tag)
 			if (!is_start && tag[i] == '/') // start reading end tag
 			{
 				name = "";
-				generic_tag.content += tag.substr(0, i - 1); // minus the </
+				generic_tag.content += tag.substr(0, i-1); // minus the </
 
-				parse_tag_str(i, name, tag, end_delim, 1); // get end tag name
+				parse_str(i, name, tag, end_delim, 1); // get end tag name
 				generic_tag.name = name;
 			}
 			else // start reading start tag
@@ -123,14 +123,14 @@ inline genericTag parse_tag(std::string tag)
 					generic_tag.is_start = is_start;
 
 					std::string start_name = "";
-					found_name = parse_tag_str(i, start_name, tag, start_delim, 2); // get start tag name
+					found_name = parse_str(i, start_name, tag, start_delim, 2); // get start tag name
 					generic_tag.name = start_name;
 					i++;
 				}
 
 				name = "";
 				struct attribute attr;
-				parse_tag_str(i, name, tag, attr_delim, 1); // get attribute
+				parse_str(i, name, tag, attr_delim, 1); // get attribute
 
 				if (valid_end(name)) // checking if we reached the end of attribute
 				{
@@ -145,7 +145,7 @@ inline genericTag parse_tag(std::string tag)
 				if (i < tag.size() && tag[i] == '=')
 				{
 					i = tag.find('\"', i) + 1;
-					parse_tag_str(i, name, tag, value_delim, 1); // get value
+					parse_str(i, name, tag, value_delim, 1); // get value
 
 					attr.value = name;
 					generic_tag.attrs[attr.name] = attr.value;
@@ -185,8 +185,8 @@ inline Dom *create_dom(std::vector<std::string> lines, std::string file_name)
 
 	std::stack<Dom *> dom;
 	Dom *current_dom = NULL;
-	Dom *last_dom = NULL;
-	Dom *result = NULL;
+	Dom *prev_dom = NULL;
+	Dom *result = NULL; // ends up as the root
 
 	dom.push(NULL);
 
@@ -197,33 +197,32 @@ inline Dom *create_dom(std::vector<std::string> lines, std::string file_name)
 		{
 			if (is_tag)
 			{
-				genericTag tag = parse_tag(j);
+				genericTag tag = parse_tag(j); // parse line into tag
 				if (tag.name[0] == '!')
 					continue; // could have an array or set of character / words to ignore
-				last_dom = dom.top();
-				tag.start_linenum = i;
+				prev_dom = dom.top();
 
 				if (tag.is_start)
 				{
 					//std::cout << "start: " << tag.name << std::endl;
-					current_dom = new Dom(tag, last_dom);
+					current_dom = new Dom(tag, prev_dom);
 					current_dom->start_linenum = i;
-					if (last_dom != NULL)
-						last_dom->add_child(current_dom);
+					if (prev_dom != NULL)
+						prev_dom->add_child(current_dom);
 					if (!tag.is_single)
 						dom.push(current_dom);
 					else
 						result = current_dom;
 				}
-				else if (last_dom != NULL && ("/" + last_dom->get_name()) == tag.name)
+				else if (prev_dom != NULL && ("/" + prev_dom->get_name()) == tag.name)
 				{
 					// std::cout << "end: " << j << std::endl;
-					last_dom->end_linenum = i;
+					prev_dom->end_linenum = i;
 					tag.content += content;
 				
 					if(current_dom != NULL) {
 						current_dom->add_content(tag.content);
-						current_dom->set_end_tag_line(i);
+						current_dom->parse_template_content(tag.content);
 					}
 					
 					content = "";
@@ -240,6 +239,7 @@ inline Dom *create_dom(std::vector<std::string> lines, std::string file_name)
 	}
 
 	result->set_file_name(file_name);
+	std::cout << "ROOT? " << result->get_name() << std::endl;
 	return result;
 }
 

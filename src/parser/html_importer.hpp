@@ -6,6 +6,10 @@
 #include "dom_parser.hpp"
 #include "simdjson.h"
 
+struct tagContent {
+	
+};
+
 class HtmlImporter
 {
 private:

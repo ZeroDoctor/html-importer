@@ -62,9 +62,6 @@ std::vector<Dom *> Dom::get_children()
 Dom *Dom::get_parent() { return parent; }
 
 std::string Dom::get_name() { return self.name; }
-size_t Dom::start_tag_line() { return self.start_linenum; }
-size_t Dom::end_tag_line() { return self.end_linenum; }
-void Dom::set_end_tag_line(size_t end) { self.end_linenum = end; }
 
 bool Dom::get_attributes(std::unordered_map<std::string, std::string> &attrs)
 {
@@ -114,6 +111,21 @@ bool Dom::get_content(std::string &content)
 }
 
 void Dom::add_content(std::string content) { self.content += content; }
+
+std::vector<std::string> Dom::get_template_content() { return self.template_contents; }
+
+void Dom::parse_template_content(std::string content) 
+{
+	size_t begin = content.find("{{", 0);
+	size_t end = 0;
+	while (begin != std::string::npos) {
+		std::cout << start_linenum << " : " << end_linenum << std::endl;
+		end = content.find("}}", begin);
+		std::string test = content.substr(begin, end+2);
+		self.template_contents.push_back(test);
+		begin = content.find("{{", begin+1);
+	}
+}
 
 std::string Dom::get_file_name() { return file_name; }
 void Dom::set_file_name(std::string file) { file_name = file; }

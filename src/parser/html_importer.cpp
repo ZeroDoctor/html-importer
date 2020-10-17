@@ -6,26 +6,35 @@ void output() {
 	
 }
 
-void print_template(std::string path, std::string file, std::string type, std::unordered_map<std::string, Dom *> &files_load)
+void process_component(
+		std::string src, std::string type, std::vector<sdom::object> objects,
+		std::unordered_map<std::string, Dom *> &files_load
+	)
 {
-	if (file == "")
-	{
-		std::cout << "Error: file not found\n";
-		return;
-	}
-
-	std::filesystem::path root(path);
-	std::string src = root.parent_path().string() + "/" + file;
-
 	Dom *dom;
-	if (files_load.find(src) == files_load.end())
-	{
+	if (files_load.find(src) == files_load.end()) {
 		dom = parse_create_dom(src);
 		files_load[src] = dom;
 	}
-	else
-	{
+	else {
 		dom = files_load[src];
+	}
+
+	if(objects.size() > 0) 
+	{
+		std::vector<std::string> template_contents = dom->get_template_content();
+		if(template_contents.size() > 0) 
+		{
+			for(auto content : template_contents) {
+				std::cout << "content -> " << content << std::endl;
+			}
+		}
+	}
+
+	for (auto obj : objects) {
+		for (auto [key, value] : obj) {
+			std::cout << key << ": " << value << std::endl;
+		}
 	}
 
 	auto tags = dom->find_all("div");
@@ -79,6 +88,10 @@ void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_loa
 					continue;
 
 				std::string file = v_attr["path"];
+				if(file == "") {
+					std::cerr << "Error include: failed to find file path\n";
+					return;
+				}
 				std::string type = v_attr["type"];
 
 				sdom::parser parser;
@@ -89,15 +102,13 @@ void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_loa
 					std::cerr << error << std::endl; 
 					return;
 				}
-				std::vector<sdom::object> vec;
-				parse_json(vec, elem);
-				for (auto obj : vec) {
-					for(auto [key, value] : obj) {
-						std::cout << key << ": " << value << std::endl;
-					}
-				}
+				std::vector<sdom::object> objects;
+				parse_json(objects, elem);
+				
+				std::filesystem::path root(path);
+				std::string src = root.parent_path().string() + "/" + file;
 
-				//print_template(path, file, type, files_load);
+				process_component(src, type, objects, files_load);
 			}
 		}
 	}

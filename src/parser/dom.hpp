@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <locale>
 
+// could remove this struct
 struct attribute
 {
 	std::string name = "";
@@ -16,20 +17,22 @@ struct attribute
 struct genericTag
 {
 	std::string name = "";
-	size_t start_linenum = -1;
-	size_t end_linenum = -1;
 	bool is_start = false;
 	bool is_single = false;
-	std::unordered_map<std::string, std::string> attrs;	
-	std::string content = "";
+	std::unordered_map<std::string, std::string> attrs;
+	
+	std::string content = ""; // imagine content taking up the whole std::string... crazy, not impossible but... still crazy
+	std::vector<std::string> template_contents; // content used for passing values to template
 };
 
 class Dom
 {
 private:
+	genericTag self;
 	Dom *parent;
 	std::vector<Dom *> children;
-	genericTag self;
+
+	// only root
 	std::string file_name;
 
 public:	
@@ -45,14 +48,16 @@ public:
 	Dom *get_parent();
 
 	std::string get_name();
-	size_t start_tag_line();
-	size_t end_tag_line();
-	void set_end_tag_line(size_t end);
 	
 	bool get_attributes(std::unordered_map<std::string, std::string> &attr);
 	bool get_content(std::string &content);
 	void add_content(std::string content);
+	std::vector<std::string> get_template_content();
+	void parse_template_content(std::string content);
+	std::vector<Dom*> find_all_templates(); // not implemented yet
+
 	
+	// only root
 	void set_file_name(std::string file);
 	std::string get_file_name();
 
