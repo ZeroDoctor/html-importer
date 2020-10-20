@@ -23,7 +23,35 @@ struct genericTag
 	
 	std::string content = ""; // imagine content taking up the whole std::string... crazy, not impossible but... still crazy
 	std::vector<std::string> template_contents; // content used for passing values to template
+
+	bool is_empty() {
+		if(name == "") return true;
+		return false;
+	}
 };
+
+struct genericTemplate
+{
+	std::string name = "";
+	size_t start_linenum = -1;
+	size_t end_linenum = -1;
+
+	bool is_empty() {
+		if(name == "") return true;
+		return false;
+	}
+};
+
+inline std::string remove_spaces(std::string str) {
+	str.erase(
+		std::remove_if(str.begin(), str.end(),
+			[](char &c) {
+				return std::isspace<char>(c, std::locale::classic());
+			}),
+		str.end());
+
+	return str;
+}
 
 class Dom
 {
@@ -36,8 +64,8 @@ private:
 	std::string file_name;
 
 public:	
-	std::size_t start_linenum = -1;
-	std::size_t end_linenum = -1;
+	size_t start_linenum = -1;
+	size_t end_linenum = -1;
 
 	Dom(genericTag s, Dom *p) : self(s), parent(p){};
 
@@ -52,8 +80,6 @@ public:
 	bool get_attributes(std::unordered_map<std::string, std::string> &attr);
 	bool get_content(std::string &content);
 	void add_content(std::string content);
-	std::vector<std::string> get_template_content();
-	void parse_template_content(std::string content);
 	std::vector<Dom*> find_all_templates(); // not implemented yet
 
 	

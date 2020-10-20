@@ -3,7 +3,7 @@
 #include <unordered_map>
 
 #include "thread_pool.hpp"
-#include "dom_parser.hpp"
+#include "template_parser.hpp"
 #include "simdjson.h"
 
 struct tagContent {

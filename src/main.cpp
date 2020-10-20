@@ -12,9 +12,7 @@ namespace ptc = prettycon;
 
 void usage() 
 {
-	ptc::ccout.setColor(ptc::Color::black, ptc::Color::lyellow, ptc::Attribute::mydefault);
 	std::cout << "usage: ihtml dst (dst = folders with *.html)" << std::endl;
-	ptc::ccout.restore();
 }
 
 
@@ -41,7 +39,6 @@ int main(int argc, char** argv)
 	std::unordered_map<std::string, Dom*> files_load;
 	std::vector<Dom*> doms;
 
-	ptc::ccout.setColor(ptc::Color::black, ptc::Color::lgreen, ptc::Attribute::mydefault);
 
 	int index = 0;
 	for(int i = 0; i < files.size(); i++) 
@@ -59,7 +56,7 @@ int main(int argc, char** argv)
 			
 		}
 
-		future[index] = pool.submit(parse_create_dom, files[i]);
+		future[index] = pool.submit(parse_create_template, files[i]);
 	}
 
 	for(int i = 0; i < TSIZE; i++) {
@@ -68,11 +65,10 @@ int main(int argc, char** argv)
 		}
 	}
 
-	HtmlImporter include(doms, files_load);
-	include.Init();
+	/* HtmlImporter include(doms, files_load);
+	include.Init(); */
 
 	pool.shutdown();
-	ptc::ccout.restore();
 	std::cout << "Done!" << std::endl;
 
 	return 0;

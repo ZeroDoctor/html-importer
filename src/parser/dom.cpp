@@ -1,18 +1,5 @@
 #include "dom.hpp"
 
-
-std::string remove_spaces(std::string str) {
-	str.erase(
-		std::remove_if(str.begin(), str.end(),
-			[](char &c) {
-				return std::isspace<char>(c, std::locale::classic());
-			}),
-		str.end());
-
-	return str;
-}
-
-
 Dom *Dom::find(std::string str)
 {
 	std::queue<Dom *> q;
@@ -118,29 +105,12 @@ bool Dom::get_content(std::string &content)
 
 void Dom::add_content(std::string content) { self.content += content; }
 
-std::vector<std::string> Dom::get_template_content() { return self.template_contents; }
-
-void Dom::parse_template_content(std::string content) 
-{
-	content = remove_spaces(content);
-
-	size_t begin = content.find("{{", 0);
-	size_t end = 0;
-	while (begin != std::string::npos) {
-
-		end = content.find("}}", begin);
-		std::string temp = content.substr(begin+2, end - begin - 2);
-		std::cout << "found : " << temp << std::endl;
-		self.template_contents.push_back(temp);
-		begin = content.find("{{", end);
-	}
-}
-
 std::string Dom::get_file_name() { return file_name; }
 void Dom::set_file_name(std::string file) { file_name = file; }
 
 Dom::~Dom()
 {
+	std::cout << "removing " << this->get_name() << std::endl;
 	for (auto child : this->children)
 		delete (child);
 }

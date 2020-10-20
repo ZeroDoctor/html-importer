@@ -13,7 +13,7 @@ void process_component(
 {
 	Dom *dom;
 	if (files_load.find(src) == files_load.end()) {
-		dom = parse_create_dom(src);
+		dom = parse_create_template(src);
 		files_load[src] = dom;
 	}
 	else {
@@ -22,13 +22,7 @@ void process_component(
 
 	if(objects.size() > 0) 
 	{
-		std::vector<std::string> template_contents = dom->get_template_content();
-		if(template_contents.size() > 0) 
-		{
-			for(auto content : template_contents) {
-				std::cout << "content -> " << content << std::endl;
-			}
-		}
+
 	}
 
 	for (auto obj : objects) {
