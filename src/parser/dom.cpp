@@ -1,5 +1,18 @@
 #include "dom.hpp"
 
+
+std::string remove_spaces(std::string str) {
+	str.erase(
+		std::remove_if(str.begin(), str.end(),
+			[](char &c) {
+				return std::isspace<char>(c, std::locale::classic());
+			}),
+		str.end());
+
+	return str;
+}
+
+
 Dom *Dom::find(std::string str)
 {
 	std::queue<Dom *> q;
@@ -85,14 +98,7 @@ bool Dom::get_content(std::string &content)
 {
 	try
 	{
-		// remove white space
-		std::string cnt = self.content;
-		cnt.erase(
-			std::remove_if(cnt.begin(), cnt.end(), 
-				[](char &c) {
-					return std::isspace<char>(c, std::locale::classic());
-				}
-			), cnt.end());
+		std::string cnt = remove_spaces(self.content);
 		
 		// check if valid content
 		if (cnt != "")
@@ -116,14 +122,17 @@ std::vector<std::string> Dom::get_template_content() { return self.template_cont
 
 void Dom::parse_template_content(std::string content) 
 {
+	content = remove_spaces(content);
+
 	size_t begin = content.find("{{", 0);
 	size_t end = 0;
 	while (begin != std::string::npos) {
-		std::cout << start_linenum << " : " << end_linenum << std::endl;
+
 		end = content.find("}}", begin);
-		std::string test = content.substr(begin, end+2);
-		self.template_contents.push_back(test);
-		begin = content.find("{{", begin+1);
+		std::string temp = content.substr(begin+2, end - begin - 2);
+		std::cout << "found : " << temp << std::endl;
+		self.template_contents.push_back(temp);
+		begin = content.find("{{", end);
 	}
 }
 

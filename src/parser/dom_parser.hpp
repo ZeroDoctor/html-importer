@@ -222,16 +222,14 @@ inline Dom *create_dom(std::vector<std::string> lines, std::string file_name)
 				
 					if(current_dom != NULL) {
 						current_dom->add_content(tag.content);
-						current_dom->parse_template_content(tag.content);
+						current_dom->parse_template_content(tag.content); // could improve into the main parser
 					}
 					
 					content = "";
 					result = dom.top();
 					dom.pop();
 				}
-			}
-			else
-			{
+			} else {
 				content += j + "\n";
 			}
 		}

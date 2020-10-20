@@ -15,3 +15,5 @@ _deps
 *.tlog
 *.sln
 *.dir
+.fake
+.ionide
