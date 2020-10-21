@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 	auto future = std::array<std::future<Dom*>, TSIZE>();
 	std::unordered_map<std::string, Dom*> files_load;
 	std::vector<Dom*> doms;
-
+	init_parser();
 
 	int index = 0;
 	for(int i = 0; i < files.size(); i++) 

@@ -33,8 +33,8 @@ struct genericTag
 struct genericTemplate
 {
 	std::string name = "";
-	size_t start_linenum = -1;
-	size_t end_linenum = -1;
+	size_t start_linenum = size_t(-1);
+	size_t end_linenum = size_t(-1);
 
 	bool is_empty() {
 		if(name == "") return true;
