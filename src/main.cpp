@@ -71,5 +71,12 @@ int main(int argc, char** argv)
 	pool.shutdown();
 	std::cout << "Done!" << std::endl;
 
+	for(auto d : doms) {
+		if(d != nullptr) {
+			std::cout << "deleting " + d->get_name() + " dom..." << std::endl;
+			delete d;
+		}
+	}
+
 	return 0;
 }

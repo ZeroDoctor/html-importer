@@ -14,6 +14,18 @@ struct attribute
 	std::string value = "";
 };
 
+struct genericTemplate
+{
+	std::string id = "";
+	size_t row = size_t(-1);
+	size_t col = size_t(-1);
+
+	bool is_empty() {
+		if(id == "") return true;
+		return false;
+	}
+};
+
 struct genericTag
 {
 	std::string name = "";
@@ -24,17 +36,15 @@ struct genericTag
 	std::string content = ""; // imagine content taking up the whole std::string... crazy, not impossible but... still crazy
 	std::vector<std::string> template_contents; // content used for passing values to template
 
-	bool is_empty() {
-		if(name == "") return true;
+	genericTemplate temp = {};
+
+	bool has_template(genericTemplate& out) {
+		if(!temp.is_empty()) {
+			out = temp;
+			return true;
+		}
 		return false;
 	}
-};
-
-struct genericTemplate
-{
-	std::string name = "";
-	size_t start_linenum = size_t(-1);
-	size_t end_linenum = size_t(-1);
 
 	bool is_empty() {
 		if(name == "") return true;

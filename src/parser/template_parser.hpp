@@ -21,12 +21,11 @@ constexpr std::uint_fast8_t _cont { 1 << 3 }; // 0000 1000 content state
 struct parserResult {
 	// returning
 	genericTag      tag = {};
-	genericTemplate temp = {};
 	std::string     out = "";
-	Dom*            current_dom = nullptr;
 
 	// tracking
 	size_t*            col;
+	const size_t*      row;
 	const std::string* line;
 };
 
@@ -46,6 +45,9 @@ inline bool is_letter(char character)
 
 // parse_tag reads a single line as a potential tag
 // so many if statements...
+// in the loop there are two main if blocks: if(c == '/') and if(result.tag.name == "")
+// the former checks for tag ending condition and
+// the latter checks for tag starting condition as well as parseing any attributes and/or templates_ids
 inline void parse_tag(parserResult& result, std::uint_fast8_t& flag) 
 {
 	if(flag & (_attr | _temp)) return; // return if reading attribute or template
@@ -55,7 +57,8 @@ inline void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 
 	col++;
 	// return if the next character is not a letter or forward slash 
-	if(col < line.size()) {
+	if(col < line.size()) 
+	{
 		char c = line[col];
 		if(!is_letter(c) && c != '/') {
 			return;
@@ -72,29 +75,32 @@ inline void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 	for(; col < line.size(); col++)
 	{
 		char c = line[col];
-		if (c == '/') {
+		if (c == '/') { // check if potential end
 			found_end = true;
-		} else if(c == '>') {
+		} else if(c == '>') { // exit loop and set tag info like name, tag type, and if tag is single
 			if(result.tag.name != "" && found_end) {
 				found_end = false;
 				if(line[col-1] == '/') result.tag.is_single = true; // could break the program
 			}
 
-			result.tag.name = line.substr(begin_name, end_name-begin_name);
+			if (!result.tag.is_single) {
+				result.tag.name = line.substr(begin_name, end_name-begin_name);
+			}
+			
 			if(!found_end) result.tag.is_start = true;
 			CLR_FLAG(flag, _tag);
 			break;
 		}
 
-		if (result.tag.name == "" && 
-			  (std::isspace<char>(c, std::locale::classic()) || col+1 == line.size())) {
-
+		if (result.tag.name == "" && // store tag name if space or new line is found
+			  (std::isspace<char>(c, std::locale::classic()) || col+1 == line.size())) 
+		{
             if (col+1 == line.size()) col++; // for '>' found on a new line
 			result.tag.name = line.substr(begin_name, col-begin_name);
 			end_name = col;
 			result.tag.is_start = true;
 
-		} else if(result.tag.name != "" && !found_end) {
+		} else if(result.tag.name != "" && !found_end) { // since name is found, find attributes
 			// parse attribute/template info
 			if (parser_map.find(c) != parser_map.end())
 			{
@@ -104,7 +110,7 @@ inline void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 				col = *result.col;
 			}
 		} else {
-			end_name = col+1;
+			end_name = col+1; // a hack for tag without attributes
 		}
 	}
 
@@ -125,12 +131,13 @@ inline void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 	size_t name_start = line.rfind(' ', col); // cheated a bit
 	std::string attr = line.substr(name_start, col-name_start);
 	std::string value = "";
+	parser* parse;
 
 	SET_FLAG(flag, _attr); // currently reading an attribute
 	for(col++; col < line.size(); col++)
 	{
 		char c = line[col];
-		if(c == '"' || c == '\'')
+		if(c == '"' || c == '\'') // find if inside quotes
 		{
 			if(curr_quote == ' ') {
 				curr_quote = c;
@@ -139,14 +146,14 @@ inline void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 			}
 		}
 
-		if(curr_quote == ' ' && (c == '/' || c == '>'))
+		if(curr_quote == ' ' && (c == '/' || c == '>')) // exit loop at tag ends
 		{
 			col--; // let parser_tag handle '/' and '>'
 			CLR_FLAG(flag, _attr);
 			break;
 		}
 
-		if(curr_quote != ' ' && c != curr_quote) {
+		if(curr_quote != ' ' && c != curr_quote) { // find values and attr names to store inside tag
 			value += c;
 		} else if(value != "") {
 			result.tag.attrs[attr] = value;
@@ -156,6 +163,14 @@ inline void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 			name_start = line.rfind(' ', col); // cheated again
 			attr = line.substr(name_start, col-name_start);
 		}
+
+		if (parser_map.find(c) != parser_map.end()) // find templates
+		{
+			parse = parser_map[c];
+			*result.col = col;
+			parse(result, flag);
+			col = *result.col;
+		}
 	}
 
 	*result.col = col;
@@ -164,19 +179,28 @@ inline void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 // parse_template reads a single line as a potential template
 inline void parse_template(parserResult& result, std::uint_fast8_t& flag) 
 {
-	return;
 	size_t col = *result.col;
 	std::string line = *result.line;
+	if(col-1 < 0 && line[col-1]!='{') return;
 
-	if(flag & _temp) 
-	{
-		for(col++; col < line.size(); col++)
-		{
-			char c = line[col];
-		}
-	}
+	std::string id;
+	size_t begin = col;
 
 	SET_FLAG(flag, _temp); // currently reading a template
+	for(col++; col < line.size(); col++)
+	{
+		char c = line[col];
+		if(c == ' ') return; // no spaces in template ids
+		if(c == '}') break;
+		id += c;
+	}
+
+	result.tag.temp.id = id;
+	result.tag.temp.row = *result.row;
+	result.tag.temp.col = begin;
+	CLR_FLAG(flag, _temp);
+
+	*result.col = col;
 }
 
 
@@ -210,7 +234,9 @@ inline void create_template(std::vector<std::string> lines) // TODO: return some
 	std::cout << "creating template...\n";
 	std::vector<std::string> prev_line; // for content context
 	std::uint_fast8_t flag{}; // all states turned off to start
+	size_t row;
 	parserResult result{};
+	result.row = &row;
 	std::vector<parserResult> results;
 
 	for(size_t row = 0; row < lines.size(); row++)
@@ -221,6 +247,7 @@ inline void create_template(std::vector<std::string> lines) // TODO: return some
 		if(!(flag & _tag)) {
 			results.push_back(result);
 			result = {};
+			result.row = &row;
 		}
 	}
 }
@@ -242,8 +269,7 @@ inline Dom* parse_create_template(std::string path) //TODO: return something
 	FileReader fr;
 	std::cout << "reading template file: " << path << "\n\n";
 	bool opened = fr.readFile(&lines, path.c_str());
-	if (!opened)
-	{
+	if (!opened) {
 		std::cout << "failed to read file: " << path << "\n\n";
 		return nullptr;
 	}
