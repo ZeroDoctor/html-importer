@@ -115,7 +115,7 @@ inline void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 // parse_attr reads a single line as a potential attribute
 inline void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 {
-	if (flag & _temp && (flag & _tag) == 0) return; // return if reading template or NOT reading tag
+	if (flag & _temp || !(flag & _tag)) return; // return if reading template or NOT reading tag
 
 	size_t col = *result.col;
 	std::string line = *result.line;
@@ -123,7 +123,8 @@ inline void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 	char curr_quote = ' ';
 
 	size_t name_start = line.rfind(' ', col); // cheated a bit
-	std::string first_attr = line.substr(name_start, col-name_start);
+	std::string attr = line.substr(name_start, col-name_start);
+	std::string value = "";
 
 	SET_FLAG(flag, _attr); // currently reading an attribute
 	for(col++; col < line.size(); col++)
@@ -143,6 +144,17 @@ inline void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 			col--; // let parser_tag handle '/' and '>'
 			CLR_FLAG(flag, _attr);
 			break;
+		}
+
+		if(curr_quote != ' ' && c != curr_quote) {
+			value += c;
+		} else if(value != "") {
+			result.tag.attrs[attr] = value;
+			attr = "";
+			value = "";
+		} else if(c == '=') {
+			name_start = line.rfind(' ', col); // cheated again
+			attr = line.substr(name_start, col-name_start);
 		}
 	}
 
@@ -183,14 +195,12 @@ inline std::uint_fast8_t parse_html(std::vector<std::string>& prev_line, std::st
 		if(parser_map.find(c) != parser_map.end()) {
 			parse = parser_map[c];
 			parse(result, flag);
-			std::cout << std::endl;
 		} else {
 			// content is here
+			// TODO: check if still reading an attr
 			// TODO: buffer '{' before adding it to content
 		}
 	}
-
-	std::cout << std::endl;	
 
 	return flag;
 }
