@@ -1,13 +1,17 @@
-// could improve this by adding it to the main parser
-// this could replace the other parser... we'll see
-
-// TODO: create a new parser & maybe create this as a class?
+// ? maybe create this as a class?
+// * NOTE: single attributes will be lost 
+// * i.e. the 'data-body' in <body data-body> will not appear in dom
 
 #include <iostream>
 #include <bitset>
 
 #include "read_file.hpp"
 #include "dom.hpp"
+
+#define SET_FLAG(n, f) ((n) |= (f))
+#define CLR_FLAG(n, f) ((n) &= ~(f))
+#define TGL_FLAG(n, f) ((n) ^= (f))
+#define CHK_FLAG(n, f) ((n) & (f))
 
 constexpr std::uint_fast8_t _tag  { 1 << 0 }; // 0000 0001 tag state
 constexpr std::uint_fast8_t _attr { 1 << 1 }; // 0000 0010 attribute state
@@ -58,8 +62,9 @@ inline void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 		}
 	}
 
-	flag |= _tag; // currently reading a tag
-	size_t begin = col;
+	SET_FLAG(flag, _tag); // currently reading a tag
+	size_t begin_name = col;
+	size_t end_name = col;
 	bool found_end = false;
 	parser* parse;
 
@@ -72,47 +77,76 @@ inline void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 		} else if(c == '>') {
 			if(result.tag.name != "" && found_end) {
 				found_end = false;
-				result.tag.is_single = true;
+				if(line[col-1] == '/') result.tag.is_single = true; // could break the program
 			}
-			flag &= ~_tag;
+
+			result.tag.name = line.substr(begin_name, end_name-begin_name);
+			if(!found_end) result.tag.is_start = true;
+			CLR_FLAG(flag, _tag);
+			break;
 		}
 
-		if (result.tag.name == "" && (c == ' ' || c == '>')) {
-			result.tag.name = line.substr(begin, col-begin);
+		if (result.tag.name == "" && 
+			  (std::isspace<char>(c, std::locale::classic()) || col+1 == line.size())) {
+
+            if (col+1 == line.size()) col++; // for '>' found on a new line
+			result.tag.name = line.substr(begin_name, col-begin_name);
+			end_name = col;
 			result.tag.is_start = true;
-		}
 
-		if(result.tag.name != "")
-		{
+		} else if(result.tag.name != "" && !found_end) {
 			// parse attribute/template info
 			if (parser_map.find(c) != parser_map.end())
 			{
 				parse = parser_map[c];
 				*result.col = col;
 				parse(result, flag);
+				col = *result.col;
 			}
+		} else {
+			end_name = col+1;
 		}
 	}
 
-	std::cout << result.tag.name << std::endl;
-	std::cout <<  "flag: " << int(flag) << std::endl;
+	std::cout << "result: " << result.tag.name << " " << end_name << ", " << begin_name << std::endl;
 	*result.col = col;
 }
 
 // parse_attr reads a single line as a potential attribute
-inline void parse_attr(parserResult& result, std::uint_fast8_t& flag) 
+inline void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 {
-	return;
-	if (flag & (_temp | ~_tag)) return; // return if reading template or NOT reading tag
+	if (flag & _temp && (flag & _tag) == 0) return; // return if reading template or NOT reading tag
 
 	size_t col = *result.col;
 	std::string line = *result.line;
 
-	flag |= _attr; // currently reading an attribute
+	char curr_quote = ' ';
+
+	size_t name_start = line.rfind(' ', col); // cheated a bit
+	std::string first_attr = line.substr(name_start, col-name_start);
+
+	SET_FLAG(flag, _attr); // currently reading an attribute
 	for(col++; col < line.size(); col++)
 	{
-		
+		char c = line[col];
+		if(c == '"' || c == '\'')
+		{
+			if(curr_quote == ' ') {
+				curr_quote = c;
+			} else if(c == curr_quote) {
+				curr_quote = ' ';
+			}
+		}
+
+		if(curr_quote == ' ' && (c == '/' || c == '>'))
+		{
+			col--; // let parser_tag handle '/' and '>'
+			CLR_FLAG(flag, _attr);
+			break;
+		}
 	}
+
+	*result.col = col;
 }
 
 // parse_template reads a single line as a potential template
@@ -127,11 +161,10 @@ inline void parse_template(parserResult& result, std::uint_fast8_t& flag)
 		for(col++; col < line.size(); col++)
 		{
 			char c = line[col];
-			if(c == ' '){}
 		}
 	}
 
-	flag |= _temp; // currently reading a template
+	SET_FLAG(flag, _temp); // currently reading a template
 }
 
 
@@ -149,12 +182,15 @@ inline std::uint_fast8_t parse_html(std::vector<std::string>& prev_line, std::st
 		char& c = line[col];
 		if(parser_map.find(c) != parser_map.end()) {
 			parse = parser_map[c];
-
-			temp_line = line.substr(col, line.size());
-			result.line = &temp_line;
 			parse(result, flag);
+			std::cout << std::endl;
+		} else {
+			// content is here
+			// TODO: buffer '{' before adding it to content
 		}
 	}
+
+	std::cout << std::endl;	
 
 	return flag;
 }
@@ -173,7 +209,6 @@ inline void create_template(std::vector<std::string> lines) // TODO: return some
 
 		flag = parse_html(prev_line, line, result, row);
 		if(!(flag & _tag)) {
-			std::cout << "found tag: " << result.tag.name << std::endl;
 			results.push_back(result);
 			result = {};
 		}
@@ -185,9 +220,9 @@ inline void init_parser()
 	// starting characters only
 	// functions are required to 
 	// handle stopping points
-	parser_map['<'] = &parse_tag;
+	parser_map['<'] = &parse_tag; // * done implementing for the most part (comments handler not done)
 	parser_map['='] = &parse_attr;
-	parser_map['{'] = &parse_template;
+	parser_map['#'] = &parse_template;
 }
 
 inline Dom* parse_create_template(std::string path) //TODO: return something

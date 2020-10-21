@@ -70,7 +70,8 @@
 		"xtree": "cpp",
 		"xutility": "cpp",
 		"cinttypes": "cpp",
-		"ranges": "cpp"
+		"ranges": "cpp",
+		"bitset": "cpp"
 	},
 	"FSharp.suggestGitignore": false
 }
