@@ -29,18 +29,18 @@ struct genericTemplate
 struct genericTag
 {
 	std::string name = "";
+	std::string content = ""; // imagine content taking up the whole std::string... crazy, not impossible but... still crazy
 	bool is_start = false;
 	bool is_single = false;
+	size_t row = size_t(-1);
+	size_t col = size_t(-1);
+
 	std::unordered_map<std::string, std::string> attrs;
-	
-	std::string content = ""; // imagine content taking up the whole std::string... crazy, not impossible but... still crazy
-	std::vector<std::string> template_contents; // content used for passing values to template
+	std::vector<genericTemplate> temp_contents;
 
-	genericTemplate temp = {};
-
-	bool has_template(genericTemplate& out) {
-		if(!temp.is_empty()) {
-			out = temp;
+	bool has_template(std::vector<genericTemplate>& out) {
+		if(!(temp_contents.size() > 0)) {
+			out = temp_contents;
 			return true;
 		}
 		return false;
