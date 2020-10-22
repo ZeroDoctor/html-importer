@@ -2,8 +2,12 @@
 // * NOTE: single attributes will be lost 
 // * i.e. the 'data-body' in <body data-body> will not appear in dom
 
+// * NOTE: can not place templates as first and/or only attribute
+// * i.e. <div {#temp}> this will break its better to do <div class="" {#temp}>
+
 #include <iostream>
 #include <bitset>
+#include <stack>
 
 #include "read_file.hpp"
 #include "dom.hpp"
@@ -54,8 +58,6 @@ inline void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 
 	size_t col = *result.col;
 	std::string line = *result.line;
-
-	std::cout << line << " " << col << std::endl; // * line here
 
 	col++;
 	// return if the next character is not a letter or forward slash 
@@ -160,7 +162,9 @@ inline void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 			result.tag.attrs[attr] = value;
 			attr = "";
 			value = "";
-		} else if(c == '=') {
+		} 
+		
+		if(c == '=') {
 			name_start = line.rfind(' ', col); // cheated again
 			attr = line.substr(name_start, col-name_start);
 		}
@@ -203,24 +207,26 @@ inline void parse_template(parserResult& result, std::uint_fast8_t& flag)
 	temp.col = begin;
 	result.tag.temp_contents.push_back(temp);
 	CLR_FLAG(flag, _temp);
-	std::cout << "ID: " + id << std::endl;
 
 	*result.col = col;
 }
 
-
 inline std::uint_fast8_t parse_html(
-		std::vector<std::string>& prev_line, std::string line, std::vector<parserResult>& results, size_t row
-	) // maybe return std::vector<parserResult> ?
+		std::string line, std::vector<parserResult> &results,
+		size_t row, std::string& content // this could change
+	)								 // maybe return std::vector<parserResult> ?
 {
 	size_t col = 0;
 	std::string temp_line;
 	std::uint_fast8_t flag{};
 	parserResult result{};
+	result.row = &row;
 	result.col = &col;
 	result.line = &line;
 	
 	parser* parse;
+	std::vector<genericTemplate> g_temp;
+	size_t loc = 0;
 
 	for(; col < line.size(); col++) {
 		char& c = line[col];
@@ -231,13 +237,31 @@ inline std::uint_fast8_t parse_html(
 				result.tag.row = row;
 				result.tag.col = col;
 				results.push_back(result);
-				std::cout << int(flag) << " result: " << result.tag.name <<  " " << col << "/" << line.size() << " | " << line[col] << std::endl;
+
+				if (result.tag.has_template(g_temp) && result.tag.name == "")
+				{
+					for (size_t i = results.size() - 1; i >= 0; i--)
+					{
+						if (!results[i].tag.is_start) {
+							loc++;
+							continue;
+						}
+
+						loc--;
+						if (loc == 0) {
+							results[i].tag.temp_contents = g_temp;
+							break;
+						}
+					}
+				}
+
 				result = {};
+				result.line = &line;
+				result.col = &col;
+				result.row = &row;
 			}
-			
 		} else {
-			// content is here
-			// TODO: check if still reading an attr
+			content += c;
 			// TODO: buffer '{' before adding it to content
 		}
 	}
@@ -248,33 +272,57 @@ inline std::uint_fast8_t parse_html(
 inline void create_template(std::vector<std::string> lines) // TODO: return something
 {
 	std::cout << "creating template...\n";
-	std::vector<std::string> prev_line; // for content context
 	std::uint_fast8_t flag{}; // all states turned off to start
 	std::vector<parserResult> results;
+	std::vector<genericTemplate> g_temp;
+	std::string content;
+
+	std::stack<Dom *> dom;
+	Dom* current_dom = nullptr;
+	Dom* prev_dom = nullptr;
+	Dom* root = nullptr;
+
+	dom.push(nullptr);
 
 	for(size_t row = 0; row < lines.size(); row++)
 	{
 		std::string line = lines[row];
+		parse_html(line, results, row, content);
+		
+		for(size_t i = 0; i < results.size(); i++)
+		{
+			parserResult r = results[i];
+			if (r.tag.name == "") continue;
 
-		flag = parse_html(prev_line, line, results, row);
-
-
-			for(auto result : results) 
+			prev_dom = dom.top();
+			if(r.tag.is_start)
 			{
-				if(result.tag.name != "") 
-				{
-					result.tag.row = row;
-					genericTag tag = result.tag;
-					std::printf("%zu, %zu %s %d %d %zu %zu\n", 
-						tag.row, tag.col, tag.name.c_str(), 
-						int(tag.is_start), int(tag.is_single), 
-						tag.temp_contents.size(), tag.attrs.size()
-					);
+				current_dom = new Dom(r.tag, prev_dom);
+				if(prev_dom != nullptr) {
+					prev_dom->add_child(current_dom);
 				}
-			}
+				if(!r.tag.is_single) {
+					dom.push(current_dom);
+				} else {
+					root = current_dom;
+				}
+			} else if(prev_dom != nullptr && ("/" + prev_dom->get_name()) == r.tag.name) {
+				prev_dom->end_linenum = row;
 
-		std::cout << std::endl;
+				if(current_dom != nullptr) {
+					current_dom->add_content(content);
+					content = "";
+				}
+
+				root = dom.top();
+				dom.pop();
+			}
+		}
+
+		results.clear();
 	}
+
+
 }
 
 inline void init_parser() 
@@ -283,8 +331,8 @@ inline void init_parser()
 	// functions are required to 
 	// handle stopping points
 	parser_map['<'] = &parse_tag; // * done implementing for the most part (comments handler not done)
-	parser_map['='] = &parse_attr;
-	parser_map['#'] = &parse_template;
+	parser_map['='] = &parse_attr; // * done with some issues
+	parser_map['#'] = &parse_template; // * done
 }
 
 inline Dom* parse_create_template(std::string path) //TODO: return something

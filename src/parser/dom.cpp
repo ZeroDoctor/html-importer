@@ -63,6 +63,12 @@ Dom *Dom::get_parent() { return parent; }
 
 std::string Dom::get_name() { return self.name; }
 
+void Dom::print_all() 
+{
+	std::cout << this->self.name << std::endl;
+	
+}
+
 bool Dom::get_attributes(std::unordered_map<std::string, std::string> &attrs)
 {
 	try

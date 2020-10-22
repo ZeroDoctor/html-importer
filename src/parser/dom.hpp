@@ -39,7 +39,8 @@ struct genericTag
 	std::vector<genericTemplate> temp_contents;
 
 	bool has_template(std::vector<genericTemplate>& out) {
-		if(!(temp_contents.size() > 0)) {
+		if(temp_contents.size() >= 1) {
+
 			out = temp_contents;
 			return true;
 		}
@@ -87,6 +88,7 @@ public:
 
 	std::string get_name();
 	
+	void print_all();
 	bool get_attributes(std::unordered_map<std::string, std::string> &attr);
 	bool get_content(std::string &content);
 	void add_content(std::string content);

@@ -15,12 +15,11 @@ void process_component(
 	if (files_load.find(src) == files_load.end()) {
 		dom = parse_create_template(src);
 		files_load[src] = dom;
-	}
-	else {
+	} else {
 		dom = files_load[src];
 	}
 
-	if(objects.size() > 0) 
+	if(objects.size() > 0)
 	{
 
 	}

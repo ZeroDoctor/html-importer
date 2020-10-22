@@ -162,7 +162,7 @@ inline genericTag parse_tag(std::string tag)
 
 // creates dom tree
 
-/**
+/*
 	Limitation:
 		- every void element needs the '/' character ex. <img />, <meta />, etc.
 		- will not work if '>' is found on the next line. i.e.:
