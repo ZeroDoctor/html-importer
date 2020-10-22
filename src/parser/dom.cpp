@@ -65,8 +65,15 @@ std::string Dom::get_name() { return self.name; }
 
 void Dom::print_all() 
 {
-	std::cout << this->self.name << std::endl;
+	std::cout << this->self.name << " children: " << this->get_children().size() << std::endl;
+	std::string content;
+	if(this->get_content(content)) {
+		std::cout << content << std::endl;
+	}
 	
+	for(auto child : this->get_children()) {
+		child->print_all();
+	}
 }
 
 bool Dom::get_attributes(std::unordered_map<std::string, std::string> &attrs)
