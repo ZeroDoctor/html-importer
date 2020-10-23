@@ -23,6 +23,7 @@ void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 	{
 		char c = line[col];
 		if(!is_letter(c) && c != '/') {
+			col--;
 			return;
 		}
 	}
@@ -70,6 +71,8 @@ void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 				*result.col = col;
 				parse(result, flag);
 				col = *result.col;
+
+				result.temp_bool = false;
 			}
 		} else {
 			end_name = col+1; // a hack for tag without attributes
@@ -132,6 +135,8 @@ void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 			*result.col = col;
 			parse(result, flag);
 			col = *result.col;
+
+			result.temp_bool = false;
 		}
 	}
 
@@ -162,6 +167,7 @@ void parse_template(parserResult& result, std::uint_fast8_t& flag)
 	temp.row = *result.row;
 	temp.col = begin;
 	result.tag.temp_contents.push_back(temp);
+	result.temp_bool = true;
 	CLR_FLAG(flag, _temp);
 
 	*result.col = col;
@@ -181,44 +187,37 @@ std::uint_fast8_t parse_html(
 	result.line = &line;
 	
 	parser* parse;
-	std::vector<genericTemplate> g_temp;
 	size_t loc = 0;
+	std::vector<genericTemplate> g_temp;
+	bool temp_bool = false;
 
-	for(; col < line.size(); col++) {
+	for(; col < line.size(); col++)
+	{
 		char& c = line[col];
 		if(parser_map.find(c) != parser_map.end()) {
 			parse = parser_map[c];
 			parse(result, flag);
-			if(!(flag & _tag)) {
+			if(!(flag & _tag))
+			{
 				result.tag.row = row;
 				result.tag.col = col;
 				results.push_back(result);
-
-				if (result.tag.has_template(g_temp) && result.tag.name == "")
-				{
-					for (size_t i = results.size() - 1; i >= 0; i--)
-					{
-						if (!results[i].tag.is_start) {
-							loc++;
-							continue;
-						}
-
-						loc--;
-						if (loc == 0) {
-							results[i].tag.temp_contents = g_temp;
-							break;
-						}
-					}
-				}
+				
+				temp_bool = result.temp_bool;
 
 				result = {};
 				result.line = &line;
 				result.col = &col;
 				result.row = &row;
+
 			}
 		} else {
 			content += c;
-			// TODO: buffer '{' before adding it to content
+		}
+
+		if(temp_bool) {
+			content.erase(content.end()-1);
+			temp_bool = false;
 		}
 	}
 
@@ -233,6 +232,9 @@ void create_template(std::vector<std::string> lines)
 	std::vector<genericTemplate> g_temp;
     std::stack<std::string> content_stack;
 	std::string content;
+	
+	bool temp_bool = false;
+	std::vector<genericTemplate> temp;
 
 	std::stack<Dom *> dom;
 	Dom* current_dom = nullptr;
@@ -249,6 +251,8 @@ void create_template(std::vector<std::string> lines)
 		for(size_t i = 0; i < results.size(); i++)
 		{
 			parserResult r = results[i];
+			temp_bool = r.temp_bool;
+			if(temp_bool) temp = r.tag.temp_contents;
 			if (r.tag.name == "") continue;
 
 			prev_dom = dom.top();
@@ -271,12 +275,13 @@ void create_template(std::vector<std::string> lines)
 				prev_dom->end_linenum = row;
 
 				if(current_dom != nullptr) {
-                    if (content_stack.size() <= 0 && content != "") {
-                        current_dom->add_content(content);
-                    } else if(content_stack.size() > 0){
-                        current_dom->add_content(content_stack.top());
-                        content_stack.pop();
-                    }
+					current_dom->add_content(content);
+					content = "";
+
+					if(temp.size() > 0) {
+						current_dom->add_template(temp);
+						temp.clear();
+					}
 				}
 
 				root = dom.top();

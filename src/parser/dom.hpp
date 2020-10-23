@@ -93,9 +93,9 @@ public:
 	bool get_content(std::string &content);
 	void add_content(std::string content);
 	std::vector<Dom*> find_all_templates(); // not implemented yet
+	void add_template(std::vector<genericTemplate> temp);
 
-	
-	// only root
+		// only root
 	void set_file_name(std::string file);
 	std::string get_file_name();
 

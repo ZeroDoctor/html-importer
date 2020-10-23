@@ -27,6 +27,7 @@ struct parserResult {
 	// returning
 	genericTag      tag = {};
 	std::string     out = "";
+	bool temp_bool = false;
 
 	// tracking
 	size_t*            col;

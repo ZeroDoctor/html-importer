@@ -65,12 +65,21 @@ std::string Dom::get_name() { return self.name; }
 
 void Dom::print_all() 
 {
-	std::cout << this->self.name << " children: " << this->get_children().size() << std::endl;
+	
 	std::string content;
 	if(this->get_content(content)) {
+		std::cout << this->self.name << " children: " << this->get_children().size() << std::endl;
 		std::cout << content << std::endl;
 	}
-	
+	std::vector<genericTemplate> temp;
+	if (this->self.has_template(temp)) {
+		for(auto t : temp) {
+			std::cout << this->self.name << " ID: " << t.id << std::endl;
+		}
+	}
+
+	std::cout << "\n";
+
 	for(auto child : this->get_children()) {
 		child->print_all();
 	}
@@ -117,6 +126,13 @@ bool Dom::get_content(std::string &content)
 }
 
 void Dom::add_content(std::string content) { self.content += content; }
+
+void Dom::add_template(std::vector<genericTemplate> temp) 
+{
+	for (auto t : temp) {
+		this->self.temp_contents.push_back(t);
+	}
+}
 
 std::string Dom::get_file_name() { return file_name; }
 void Dom::set_file_name(std::string file) { file_name = file; }
