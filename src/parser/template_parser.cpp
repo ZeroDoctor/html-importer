@@ -148,7 +148,7 @@ void parse_template(parserResult& result, std::uint_fast8_t& flag)
     size_t col = *result.col;
 	std::string line = *result.line;
 
-	if(col-1 < 0 && line[col-1]!='{') return;
+	if(col-1 >= 0 && line[col-1] != '{') {return;}
 
 	std::string id;
 	size_t begin = col;
@@ -216,6 +216,7 @@ std::uint_fast8_t parse_html(
 		}
 
 		if(temp_bool) {
+			std::cout << "-- erasing {" << std::endl;
 			content.erase(content.end()-1);
 			temp_bool = false;
 		}
@@ -268,15 +269,21 @@ void create_template(std::vector<std::string> lines)
 					root = current_dom;
 				}
 
-                if(content != "") {
+                if(remove_spaces(content) != "") {
+					std::cout << "content push: " << content << std::endl;
                     content_stack.push(content);
                 }
 			} else if(prev_dom != nullptr && ("/" + prev_dom->get_name()) == r.tag.name) {
 				prev_dom->end_linenum = row;
 
 				if(current_dom != nullptr) {
-					current_dom->add_content(content);
-					content = "";
+					if(content_stack.size() <= 0) {
+						prev_dom->add_content(content);
+						content = "";
+					} else {
+						content = content_stack.top();
+						content_stack.pop();
+					}
 
 					if(temp.size() > 0) {
 						current_dom->add_template(temp);

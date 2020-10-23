@@ -67,8 +67,9 @@ void Dom::print_all()
 {
 	
 	std::string content;
+	std::cout << this->self.name << " children: " << this->get_children().size() << std::endl;
+
 	if(this->get_content(content)) {
-		std::cout << this->self.name << " children: " << this->get_children().size() << std::endl;
 		std::cout << content << std::endl;
 	}
 	std::vector<genericTemplate> temp;
