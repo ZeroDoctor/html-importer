@@ -73,5 +73,6 @@
 		"ranges": "cpp",
 		"bitset": "cpp"
 	},
-	"FSharp.suggestGitignore": false
+	"FSharp.suggestGitignore": false,
+	"cmake.sourceDirectory": "${workspaceFolder}/src"
 }
