@@ -238,6 +238,7 @@ void create_template(std::vector<std::string> lines)
 	std::vector<genericTemplate> temp;
 
 	std::stack<Dom *> dom;
+
 	Dom* current_dom = nullptr;
 	Dom* prev_dom = nullptr;
 	Dom* root = nullptr;
@@ -269,20 +270,31 @@ void create_template(std::vector<std::string> lines)
 					root = current_dom;
 				}
 
-                if(remove_spaces(content) != "") {
-					std::cout << "content push: " << content << std::endl;
+                if(!r.tag.is_single) {
+					std::cout << current_dom->get_name() + " content push: " << content <<  std::endl;
                     content_stack.push(content);
+					content = "";
                 }
 			} else if(prev_dom != nullptr && ("/" + prev_dom->get_name()) == r.tag.name) {
 				prev_dom->end_linenum = row;
 
-				if(current_dom != nullptr) {
-					if(content_stack.size() <= 0) {
-						prev_dom->add_content(content);
-						content = "";
-					} else {
-						content = content_stack.top();
-						content_stack.pop();
+				if(current_dom != nullptr) 
+				{
+					if (remove_spaces(content) != "") 
+					{
+						if (content_stack.size() <= 0)
+						{
+							std::cout << "add: " + prev_dom->get_name() << content << std::endl;
+							prev_dom->add_content(content);
+							content = "";
+						}
+						else
+						{
+							prev_dom->add_content(content);
+							std::cout << "pop: " + prev_dom->get_name() << content << std::endl;
+							content = content_stack.top();
+							content_stack.pop();
+						}
 					}
 
 					if(temp.size() > 0) {
