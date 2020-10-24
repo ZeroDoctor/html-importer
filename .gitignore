@@ -17,3 +17,5 @@ _deps
 *.dir
 .fake
 .ionide
+
+.vscode/settings.json

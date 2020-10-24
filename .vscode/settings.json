@@ -71,8 +71,20 @@
 		"xutility": "cpp",
 		"cinttypes": "cpp",
 		"ranges": "cpp",
-		"bitset": "cpp"
+		"bitset": "cpp",
+		"*.tcc": "cpp",
+		"clocale": "cpp",
+		"codecvt": "cpp",
+		"cstdarg": "cpp",
+		"cwctype": "cpp",
+		"memory_resource": "cpp",
+		"numeric": "cpp",
+		"optional": "cpp",
+		"random": "cpp",
+		"regex": "cpp",
+		"string_view": "cpp"
 	},
 	"FSharp.suggestGitignore": false,
-	"cmake.sourceDirectory": "${workspaceFolder}/src"
+	"cmake.sourceDirectory": "${workspaceFolder}/src",
+	"cmake.buildArgs": ["-lc++fs"]
 }
