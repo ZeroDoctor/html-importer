@@ -17,3 +17,4 @@ Note: This repo uses c++17
 - [ ] Insert/Replace includes with desired template into a build folder
 - [x] Allow multiple json elements in include tag
 - [x] Seperate "engine" from set template rules
+- [ ] Correctly ignore non-html files

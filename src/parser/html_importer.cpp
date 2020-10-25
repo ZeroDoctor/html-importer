@@ -6,9 +6,9 @@ void output() {
 
 Dom* include_component() {
 
-	Dom* new_dom;
+	Dom* new_dom = nullptr;
 
-
+	// TODO: replace include tag with desired div tag type
 
 	return new_dom;
 }
@@ -27,10 +27,13 @@ void process_component(
 		dom = files_load[src];
 	}
 
-
 	std::unordered_map<std::string, std::string> obj_map;
+	for (auto obj : objects) {
+		for (auto [key, value] : obj) {
+			obj_map[std::string(key)] = std::string(value);
+		}
+	}
 
-	std::string content;
 	auto tags = dom->find_all("div");
 	for (auto tag : tags)
 	{
@@ -39,12 +42,9 @@ void process_component(
 		if (has_attr && type == v_attr["type"])
 		{
 			tag->set_temp_values(obj_map);
-			tag->get_content(content);
 			tag->print_all();
 		}
 	}
-
-	
 }
 
 void parse_json(std::vector<sdom::object>& result, sdom::element element)
@@ -66,46 +66,47 @@ void parse_json(std::vector<sdom::object>& result, sdom::element element)
 
 void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_load)
 {
-
 	std::vector<Dom *> doms = dom->find_all("include");
 	std::string path = dom->get_file_name();
 
-	if (doms.size() > 0)
+	for (auto tag : doms)
 	{
-		for (auto tag : doms)
+		std::unordered_map<std::string, std::string> v_attr;
+		std::string content;
+
+		bool has_attr = tag->get_attributes(v_attr);
+		if (has_attr)
 		{
-			std::unordered_map<std::string, std::string> v_attr;
-			std::string content;
+			bool has_content = tag->get_content(content);
 
-			bool has_attr = tag->get_attributes(v_attr);
-			if (has_attr)
+			std::string file = v_attr["path"];
+			if(file == "") {
+				std::cerr << "Error include: failed to find file path: " << file + "\n";
+				return;
+			}
+			std::string type = v_attr["type"]; 
+
+			// TODO: handle dom when 'type' attribute is not found (a.k.a insert the whole component file)
+			if (has_content) 
 			{
-				bool has_content = tag->get_content(content);
-				if (!has_content) continue;
-
-				std::string file = v_attr["path"];
-				if(file == "") {
-					std::cerr << "Error include: failed to find file path: " << file + "\n";
-					return;
-				}
-				std::string type = v_attr["type"];
-
 				sdom::parser parser;
 				sdom::element elem;
 
 				auto error = parser.parse(content).get(elem);
-				if(error) {
-					std::cerr << error << std::endl; 
+				if (error)
+				{
+					std::cerr << error << std::endl;
 					return;
 				}
 				std::vector<sdom::object> objects;
 				parse_json(objects, elem);
-				
+
 				std::filesystem::path root(path);
 				std::string src = "./" + file;
 
 				process_component(src, type, objects, files_load);
 			}
+			
 		}
 	}
 }

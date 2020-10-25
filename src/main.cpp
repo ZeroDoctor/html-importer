@@ -66,6 +66,7 @@ int main(int argc, char** argv)
 		}
 	}
 
+	std::cout << "importing..." << std::endl;
 	HtmlImporter include(doms, files_load);
 	include.Init(); 
 

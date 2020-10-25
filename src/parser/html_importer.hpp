@@ -5,10 +5,6 @@
 #include "thread_pool.hpp"
 #include "template_parser.hpp"
 
-struct tagContent {
-	
-};
-
 class HtmlImporter
 {
 private:

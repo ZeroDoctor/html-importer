@@ -313,9 +313,6 @@ Dom* create_template(std::vector<std::string> lines)
 		results.clear();
 	}
 
-	root->print_all();
-	std::cout << "---------------" << std::endl;
-	
 	return root;
 }
 

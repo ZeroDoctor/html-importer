@@ -24,7 +24,9 @@ public:
 
 			std::string file = entry.path().string();
 
-			result.push_back(file);
+			if (file.find(".html") == std::string::npos) continue;
+
+				result.push_back(file);
 		}
 
 		return result;

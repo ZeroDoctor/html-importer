@@ -86,5 +86,8 @@
 	},
 	"FSharp.suggestGitignore": false,
 	"cmake.sourceDirectory": "${workspaceFolder}/src",
-	"cmake.buildArgs": ["-lc++fs"]
+	"cmake.buildArgs": [
+		"-lc++fs"
+	],
+	"C_Cpp.errorSquiggles": "Disabled"
 }
