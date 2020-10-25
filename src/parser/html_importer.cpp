@@ -43,6 +43,8 @@ void process_component(
 			tag->print_all();
 		}
 	}
+
+	
 }
 
 void parse_json(std::vector<sdom::object>& result, sdom::element element)

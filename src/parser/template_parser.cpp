@@ -270,7 +270,8 @@ Dom* create_template(std::vector<std::string> lines)
 					root = current_dom;
 				}
 
-                if(!r.tag.is_single) {
+                if(!r.tag.is_single) 
+				{
                     content_stack.push(content);
 					temp_stack.push(temp);
 					temp.clear();
