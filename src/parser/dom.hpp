@@ -8,6 +8,10 @@
 #include <unordered_map>
 #include <locale>
 
+#include "simdjson.h"
+
+namespace sdom = simdjson::dom;
+
 // could remove this struct
 struct attribute
 {
@@ -95,6 +99,7 @@ public:
 	void add_content(std::string content);
 	std::vector<Dom*> find_all_templates(); // not implemented yet
 	void add_template(std::vector<genericTemplate> temp);
+	void set_temp_values(std::unordered_map<std::string, std::string> obj_map);
 
 		// only root
 	void set_file_name(std::string file);

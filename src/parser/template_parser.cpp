@@ -51,7 +51,6 @@ void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 			}
 			
 			if(!found_end) result.tag.is_start = true;
-			CLR_FLAG(flag, _tag);
 			break;
 		}
 
@@ -79,6 +78,7 @@ void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 		}
 	}
 
+	CLR_FLAG(flag, _tag);
 	*result.col = col;
 }
 
@@ -109,17 +109,15 @@ void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 			}
 		}
 
-		if(curr_quote == ' ' && (c == '/' || c == '>')) // exit loop at tag ends
-		{
+		if(curr_quote == ' ' && (c == '/' || c == '>')) { // exit loop at tag ends
 			col--; // let parser_tag handle '/' and '>'
-			CLR_FLAG(flag, _attr);
 			break;
 		}
 
 		if(curr_quote != ' ' && c != curr_quote) { // find values and attr names to store inside tag
 			value += c;
 		} else if(value != "") {
-			result.tag.attrs[attr] = value;
+			result.tag.attrs[remove_spaces(attr)] = value; // could improve this part
 			attr = "";
 			value = "";
 		} 
@@ -140,6 +138,7 @@ void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 		}
 	}
 
+	CLR_FLAG(flag, _attr);
 	*result.col = col;
 }
 
@@ -225,16 +224,16 @@ std::uint_fast8_t parse_html(
 	return flag;
 }
 
-void create_template(std::vector<std::string> lines)
+Dom* create_template(std::vector<std::string> lines)
 {
     std::cout << "creating template...\n";
 	std::uint_fast8_t flag{}; // all states turned off to start
 	std::vector<parserResult> results;
-	std::vector<genericTemplate> g_temp;
     std::stack<std::string> content_stack;
 	std::string content;
 	
 	bool temp_bool = false;
+	std::stack<std::vector<genericTemplate>> temp_stack;
 	std::vector<genericTemplate> temp;
 
 	std::stack<Dom *> dom;
@@ -249,7 +248,7 @@ void create_template(std::vector<std::string> lines)
 	{
 		std::string line = lines[row];
 		parse_html(line, results, row, content);
-		
+
 		for(size_t i = 0; i < results.size(); i++)
 		{
 			parserResult r = results[i];
@@ -261,6 +260,7 @@ void create_template(std::vector<std::string> lines)
 			if(r.tag.is_start)
 			{
 				current_dom = new Dom(r.tag, prev_dom);
+				current_dom->start_linenum = row;
 				if(prev_dom != nullptr) {
 					prev_dom->add_child(current_dom);
 				}
@@ -271,42 +271,41 @@ void create_template(std::vector<std::string> lines)
 				}
 
                 if(!r.tag.is_single) {
-					std::cout << current_dom->get_name() + " content push: " << content <<  std::endl;
                     content_stack.push(content);
+					temp_stack.push(temp);
+					temp.clear();
 					content = "";
                 }
 			} else if(prev_dom != nullptr && ("/" + prev_dom->get_name()) == r.tag.name) {
 				prev_dom->end_linenum = row;
 
-				if(current_dom != nullptr) 
+				if(remove_spaces(content) != "") 
 				{
-					if (remove_spaces(content) != "") 
-					{
-						if (content_stack.size() <= 0)
-						{
-							std::cout << "add: " + prev_dom->get_name() << content << std::endl;
-							prev_dom->add_content(content);
-							content = "";
-						}
-						else
-						{
-							prev_dom->add_content(content);
-							std::cout << "pop: " + prev_dom->get_name() << content << std::endl;
-							content = content_stack.top();
-							content_stack.pop();
-						}
+					if (content_stack.size() <= 0) {
+					prev_dom->add_content(content);
+					content = "";
+					} else {
+						prev_dom->add_content(content);
+						content = content_stack.top();
+						content_stack.pop();
 					}
+				}	
 
-					if(temp.size() > 0) {
-						current_dom->add_template(temp);
-						temp.clear();
-					}
+				if (temp_stack.size() <= 0) {
+					prev_dom->add_template(temp);
+					temp.clear();
+				} else {
+					prev_dom->add_template(temp);
+					temp = temp_stack.top();
+					temp_stack.pop();
 				}
 
 				root = dom.top();
 				dom.pop();
 			} else if (prev_dom != nullptr) {
 				std::cout << "missing end tag... " + prev_dom->get_name() << std::endl;
+			} else {
+				std::cout << "no idea" << std::endl;
 			}
 		}
 
@@ -314,6 +313,9 @@ void create_template(std::vector<std::string> lines)
 	}
 
 	root->print_all();
+	std::cout << "---------------" << std::endl;
+	
+	return root;
 }
 
 Dom* parse_create_template(std::string path)
@@ -328,7 +330,5 @@ Dom* parse_create_template(std::string path)
 		return nullptr;
 	}
 
-	create_template(lines);
-
-	return nullptr;
+	return create_template(lines);
 }

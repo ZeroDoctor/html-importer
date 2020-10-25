@@ -1,9 +1,16 @@
 #include "html_importer.hpp"
 
-namespace sdom = simdjson::dom;
-
 void output() {
 	
+}
+
+Dom* include_component() {
+
+	Dom* new_dom;
+
+
+
+	return new_dom;
 }
 
 void process_component(
@@ -14,22 +21,16 @@ void process_component(
 	Dom *dom;
 	if (files_load.find(src) == files_load.end()) {
 		dom = parse_create_template(src);
+		if(dom == nullptr) return;
 		files_load[src] = dom;
 	} else {
 		dom = files_load[src];
 	}
 
-	if(objects.size() > 0)
-	{
 
-	}
+	std::unordered_map<std::string, std::string> obj_map;
 
-	for (auto obj : objects) {
-		for (auto [key, value] : obj) {
-			std::cout << key << ": " << value << std::endl;
-		}
-	}
-
+	std::string content;
 	auto tags = dom->find_all("div");
 	for (auto tag : tags)
 	{
@@ -37,8 +38,9 @@ void process_component(
 		bool has_attr = tag->get_attributes(v_attr);
 		if (has_attr && type == v_attr["type"])
 		{
-			std::string output = type + " / " + v_attr["type"];
-			std::cout << "div of type " + output + " start from: " << tag->start_linenum << " to " << tag->end_linenum << std::endl;
+			tag->set_temp_values(obj_map);
+			tag->get_content(content);
+			tag->print_all();
 		}
 	}
 }
@@ -77,12 +79,11 @@ void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_loa
 			if (has_attr)
 			{
 				bool has_content = tag->get_content(content);
-				if (!has_content)
-					continue;
+				if (!has_content) continue;
 
 				std::string file = v_attr["path"];
 				if(file == "") {
-					std::cerr << "Error include: failed to find file path\n";
+					std::cerr << "Error include: failed to find file path: " << file + "\n";
 					return;
 				}
 				std::string type = v_attr["type"];
@@ -99,7 +100,7 @@ void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_loa
 				parse_json(objects, elem);
 				
 				std::filesystem::path root(path);
-				std::string src = root.parent_path().string() + "/" + file;
+				std::string src = "./" + file;
 
 				process_component(src, type, objects, files_load);
 			}
@@ -124,6 +125,4 @@ void HtmlImporter::Init()
 	}
 }
 
-HtmlImporter::~HtmlImporter()
-{
-}
+HtmlImporter::~HtmlImporter() {}

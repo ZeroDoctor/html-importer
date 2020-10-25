@@ -61,15 +61,16 @@ int main(int argc, char** argv)
 
 	for(int i = 0; i < TSIZE; i++) {
 		if(future[i].valid()) {
+			std::cout << "created dom..." << std::endl;
 			doms.push_back(future[index].get());
 		}
 	}
 
-	/* HtmlImporter include(doms, files_load);
-	include.Init(); */
+	HtmlImporter include(doms, files_load);
+	include.Init(); 
 
 	pool.shutdown();
-	std::cout << "Done!" << std::endl;
+	std::cout << "Done!" << std::endl << std::endl;
 
 	for(auto d : doms) {
 		if(d != nullptr) {

@@ -67,7 +67,7 @@ std::uint_fast8_t parse_html(
 		size_t row, std::string& content // this could change
 	);
 
-void create_template(std::vector<std::string> lines);
+Dom* create_template(std::vector<std::string> lines);
 
 void init_parser();
 

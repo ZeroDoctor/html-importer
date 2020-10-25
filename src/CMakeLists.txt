@@ -13,6 +13,8 @@ file(GLOB thread "thread/*.cpp")
 
 add_executable(import-html-template "${main}" "${parser}" "${util}" "${thread}")
 
+# cmake -DCMAKE_CXX_COMPILER=g++-8
+
 target_include_directories(import-html-template PRIVATE main)
 target_include_directories(import-html-template PRIVATE parser)
 target_include_directories(import-html-template PRIVATE util)

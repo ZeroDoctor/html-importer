@@ -4,7 +4,6 @@
 
 #include "thread_pool.hpp"
 #include "template_parser.hpp"
-#include "simdjson.h"
 
 struct tagContent {
 	

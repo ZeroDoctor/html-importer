@@ -18,11 +18,9 @@ public:
 			return result;
 		}
 
-		for(const auto & entry : std::filesystem::directory_iterator(path)) {
-
-			if(entry.is_directory()) {
-				continue; // could recurse here
-			}
+		for(const auto & entry : std::filesystem::directory_iterator(path)) 
+		{
+			if(entry.is_directory()) continue; // could recurse here
 
 			std::string file = entry.path().string();
 
@@ -37,9 +35,9 @@ public:
 		std::string line;
 		std::ifstream infile(file);
 
-		if (infile.is_open()) {
-			if (!infile)
-				return false;
+		if (infile.is_open()) 
+		{
+			if (!infile) return false;
 
 			while (std::getline(infile, line)) {
 				out_str->push_back(line);
@@ -49,6 +47,7 @@ public:
 			
 			return true;
 		}
+
 		return false;
 	}
 };

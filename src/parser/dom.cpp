@@ -63,24 +63,28 @@ Dom *Dom::get_parent() { return parent; }
 
 std::string Dom::get_name() { return self.name; }
 
-void Dom::print_all() 
+void Dom::print_all()
 {
-	
 	std::string content;
-	std::cout << this->self.name << " children: " << this->get_children().size() << std::endl;
+	std::cout << this->self.name << "\n\tchildren: " << this->get_children().size() << std::endl;
+
+	for(auto attr : self.attrs) {
+		std::cout << "\tAttr: " << attr.first << " Value: " << attr.second << std::endl;
+	}
 
 	if(this->get_content(content)) {
-		std::cout << content << std::endl;
+		std::cout << "\tContent: " << content << "\n";
 	}
+
 	std::vector<genericTemplate> temp;
 	if (this->self.has_template(temp)) {
 		for(auto t : temp) {
-			std::cout << this->self.name << " ID: " << t.id << std::endl;
+			std::cout << "\tID: " << t.id << "\tRow: " << t.row << "\tCol: " << t.col << std::endl;
 		}
 	}
 
 	std::cout << "\n";
-
+	
 	for(auto child : this->get_children()) {
 		child->print_all();
 	}
@@ -132,6 +136,30 @@ void Dom::add_template(std::vector<genericTemplate> temp)
 {
 	for (auto t : temp) {
 		this->self.temp_contents.push_back(t);
+	}
+}
+
+void Dom::set_temp_values(std::unordered_map<std::string, std::string> obj_map)
+{
+	std::queue<Dom *> q;
+	std::vector<genericTemplate> gen_temp;
+	q.push(this);
+
+	while (!q.empty())
+	{
+		Dom *pgoal = q.front();
+		q.pop();
+
+		if(pgoal->self.has_template(gen_temp)) 
+		{
+			for(auto temp : gen_temp) {
+				if(obj_map.find(temp.id) == obj_map.end()) continue;
+				pgoal->self.content = obj_map[temp.id];
+			}
+		}
+
+		for (auto child : pgoal->get_children())
+			q.push(child);
 	}
 }
 
