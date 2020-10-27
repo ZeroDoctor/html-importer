@@ -18,3 +18,4 @@ Note: This repo uses c++17
 - [x] Allow multiple json elements in include tag
 - [x] Seperate "engine" from set template rules
 - [ ] Correctly ignore non-html files
+- [ ] Add option to dynamically change dom if id doesn't exists
