@@ -2,6 +2,8 @@
 
 Note: This repo uses c++17
 
+Gets the job done but with a naive "parser"
+
 ## Fixes
 
 - [ ] create a list of void elements
