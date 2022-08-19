@@ -8,9 +8,8 @@
 #include <unordered_map>
 #include <locale>
 
-#include "simdjson.h"
+#include "util/simdjson.h"
 
-namespace sdom = simdjson::dom;
 
 // could remove this struct
 struct attribute

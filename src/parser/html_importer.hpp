@@ -2,8 +2,8 @@
 
 #include <unordered_map>
 
-#include "thread_pool.hpp"
-#include "template_parser.hpp"
+#include "thread/thread_pool.hpp"
+#include "parser/template_parser.hpp"
 
 class HtmlImporter
 {

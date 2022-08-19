@@ -2,9 +2,9 @@
 #include <stack>
 #include <chrono>
 
-#include "pretty_console.hpp"
-#include "html_importer.hpp"
-#include "argh.h"
+#include "util/pretty_console.hpp"
+#include "util/argh.h"
+#include "parser/html_importer.hpp"
 
 #define TSIZE 7
 

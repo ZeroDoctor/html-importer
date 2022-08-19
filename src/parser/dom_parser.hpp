@@ -1,8 +1,8 @@
 #pragma once
 
 #include <stack>
-#include "read_file.hpp"
-#include "dom.hpp"
+#include "util/read_file.hpp"
+#include "parser/dom.hpp"
 
 // parses an html file into potential start, end, or single tags
 inline bool parse_html(std::vector<std::string> &result, std::string str, char delim, char excpt)
@@ -67,7 +67,7 @@ inline bool valid_end(std::string potential_end)
 }
 
 // parses tag name, attributes, or values
-inline bool parse_str(std::size_t &i, std::string &name, std::string tag, char *delim, int length)
+inline bool parse_str(std::size_t &i, std::string &name, std::string tag, const char *delim, int length)
 {
 	while (i < tag.size()) // the file may not be in html format if i < tag.size() is false
 	{
@@ -92,10 +92,10 @@ inline genericTag parse_tag(std::string tag)
 	struct genericTag generic_tag;
 
 	std::string name = "";
-	char* end_delim = ">";
-	char* start_delim = " >";
-	char* attr_delim = "=/>";
-	char* value_delim = "\"";
+	const char* end_delim = ">";
+	const char* start_delim = " >";
+	const char* attr_delim = "=/>";
+	const char* value_delim = "\"";
 
 	for (std::size_t i = 0; i < tag.size(); i++)
 	{

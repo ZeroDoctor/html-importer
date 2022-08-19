@@ -1,5 +1,7 @@
 #include "html_importer.hpp"
 
+namespace sdom = simdjson::dom;
+
 void output() {
 	
 }

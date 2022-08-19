@@ -10,8 +10,8 @@
 #include <bitset>
 #include <stack>
 
-#include "read_file.hpp"
-#include "dom.hpp"
+#include "util/read_file.hpp"
+#include "parser/dom.hpp"
 
 #define SET_FLAG(n, f) ((n) |= (f))
 #define CLR_FLAG(n, f) ((n) &= ~(f))
