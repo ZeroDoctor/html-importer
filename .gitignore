@@ -8,6 +8,7 @@ compile_commands.json
 *.sln
 *.dir
 .fake
-.ionide
 
-.vscode/settings.json
+.cache/*
+.ionide/*
+.vscode/*
