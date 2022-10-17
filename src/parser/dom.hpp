@@ -12,14 +12,12 @@
 
 
 // could remove this struct
-struct attribute
-{
+struct attribute {
 	std::string name = "";
 	std::string value = "";
 };
 
-struct genericTemplate
-{
+struct genericTemplate {
 	std::string id = "";
 	size_t row = size_t(-1);
 	size_t col = size_t(-1);
@@ -30,8 +28,7 @@ struct genericTemplate
 	}
 };
 
-struct genericTag
-{
+struct genericTag {
 	std::string name = "";
 	std::string content = ""; // imagine content taking up the whole std::string... crazy, not impossible but... still crazy
 	bool is_start = false;
@@ -42,34 +39,37 @@ struct genericTag
 	std::unordered_map<std::string, std::string> attrs;
 	std::vector<genericTemplate> temp_contents;
 
-	bool has_template(std::vector<genericTemplate>& out) {
-		if(temp_contents.size() >= 1) {
-
+	bool has_template(std::vector<genericTemplate>& out) 
+	{
+		if(temp_contents.size() >= 1) 
+		{
 			out = temp_contents;
 			return true;
 		}
+
 		return false;
 	}
 
-	bool is_empty() {
-		if(name == "") return true;
-		return false;
-	}
+	bool is_empty() { return name == ""; }
 };
 
-inline std::string remove_spaces(std::string str) {
+inline std::string remove_spaces(std::string str) 
+{
 	str.erase(
-		std::remove_if(str.begin(), str.end(),
+		std::remove_if(
+			str.begin(), 
+			str.end(),
 			[](char &c) {
 				return std::isspace<char>(c, std::locale::classic());
-			}),
-		str.end());
+			}
+		),
+		str.end()
+	);
 
 	return str;
 }
 
-class Dom
-{
+class Dom {
 private:
 	genericTag self;
 	Dom *parent;
@@ -91,7 +91,7 @@ public:
 	Dom *get_parent();
 
 	std::string get_name();
-	
+
 	void print_all();
 	bool get_attributes(std::unordered_map<std::string, std::string> &attr);
 	bool get_content(std::string &content);
@@ -100,10 +100,9 @@ public:
 	void add_template(std::vector<genericTemplate> temp);
 	void set_temp_values(std::unordered_map<std::string, std::string> obj_map);
 
-		// only root
+	// only root
 	void set_file_name(std::string file);
 	std::string get_file_name();
 
 	~Dom();
-
 };

@@ -8,8 +8,6 @@
 
 #define TSIZE 7
 
-namespace ptc = prettycon;
-
 void usage() 
 {
 	std::cout << "usage: ihtml dst (dst = folders with *.html)" << std::endl;

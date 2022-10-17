@@ -169,6 +169,7 @@ void Dom::set_file_name(std::string file) { file_name = file; }
 Dom::~Dom()
 {
 	std::cout << "removing " << this->get_name() << std::endl;
-	for (auto child : this->children)
+	for (auto child : this->children) {
 		delete (child);
+	}
 }

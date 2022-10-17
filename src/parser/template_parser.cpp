@@ -2,7 +2,7 @@
 
 void init_parser()
 {
-    // starting characters only
+	// starting characters only
 	// functions are required to 
 	// handle stopping points
 	parser_map['<'] = &parse_tag; // * done implementing for the most part (comments handler not done)
@@ -12,7 +12,7 @@ void init_parser()
 
 void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 {
-    if(flag & (_attr | _temp)) return; // return if reading attribute or template
+	if(flag & (_attr | _temp)) return; // return if reading attribute or template
 
 	size_t col = *result.col;
 	std::string line = *result.line;
@@ -22,7 +22,8 @@ void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 	if(col < line.size()) 
 	{
 		char c = line[col];
-		if(!is_letter(c) && c != '/') {
+		if(!is_letter(c) && c != '/') 
+		{
 			col--;
 			return;
 		}
@@ -35,29 +36,31 @@ void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 	parser* parse;
 
 	// parse tag name
-	for(; col < line.size(); col++)
-	{
+	for(; col < line.size(); col++) {
 		char c = line[col];
-		if (c == '/') { // check if potential end
+		if (c == '/') // check if potential end
+		{ 
 			found_end = true;
 		} else if(c == '>') { // exit loop and set tag info like name, tag type, and if tag is single
-			if(result.tag.name != "" && found_end) {
+			if(result.tag.name != "" && found_end) 
+			{
 				found_end = false;
 				if(line[col-1] == '/') result.tag.is_single = true; // could break the program
 			}
 
-			if (!result.tag.is_single) {
+			if (!result.tag.is_single) 
+			{
 				result.tag.name = line.substr(begin_name, end_name-begin_name);
 			}
-			
+
 			if(!found_end) result.tag.is_start = true;
 			break;
 		}
 
 		if (result.tag.name == "" && // store tag name if space or new line is found
-			  (std::isspace<char>(c, std::locale::classic()) || col+1 == line.size())) 
+			(std::isspace<char>(c, std::locale::classic()) || col+1 == line.size())) 
 		{
-            if (col+1 == line.size()) col++; // for '>' found on a new line
+			if (col+1 == line.size()) col++; // for '>' found on a new line
 			result.tag.name = line.substr(begin_name, col-begin_name);
 			end_name = col;
 			result.tag.is_start = true;
@@ -84,7 +87,7 @@ void parse_tag(parserResult& result, std::uint_fast8_t& flag)
 
 void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 {
-    if (flag & _temp || !(flag & _tag)) return; // return if reading template or NOT reading tag
+	if (flag & _temp || !(flag & _tag)) return; // return if reading template or NOT reading tag
 
 	size_t col = *result.col;
 	std::string line = *result.line;
@@ -97,8 +100,7 @@ void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 	parser* parse;
 
 	SET_FLAG(flag, _attr); // currently reading an attribute
-	for(col++; col < line.size(); col++)
-	{
+	for(col++; col < line.size(); col++) {
 		char c = line[col];
 		if(c == '"' || c == '\'') // find if inside quotes
 		{
@@ -109,20 +111,23 @@ void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 			}
 		}
 
-		if(curr_quote == ' ' && (c == '/' || c == '>')) { // exit loop at tag ends
+		if(curr_quote == ' ' && (c == '/' || c == '>')) // exit loop at tag ends
+		{ 
 			col--; // let parser_tag handle '/' and '>'
 			break;
 		}
 
-		if(curr_quote != ' ' && c != curr_quote) { // find values and attr names to store inside tag
+		if(curr_quote != ' ' && c != curr_quote) // find values and attr names to store inside tag
+		{ 
 			value += c;
 		} else if(value != "") {
 			result.tag.attrs[remove_spaces(attr)] = value; // could improve this part
 			attr = "";
 			value = "";
 		} 
-		
-		if(c == '=') {
+
+		if(c == '=') 
+		{
 			name_start = line.rfind(' ', col); // cheated again
 			attr = line.substr(name_start, col-name_start);
 		}
@@ -144,17 +149,16 @@ void parse_attr(parserResult& result, std::uint_fast8_t& flag)
 
 void parse_template(parserResult& result, std::uint_fast8_t& flag)
 {
-    size_t col = *result.col;
+	size_t col = *result.col;
 	std::string line = *result.line;
 
-	if(col-1 >= 0 && line[col-1] != '{') {return;}
+	if(col-1 >= 0 && line[col-1] != '{') return;
 
 	std::string id;
 	size_t begin = col;
 
 	SET_FLAG(flag, _temp); // currently reading a template
-	for(col++; col < line.size(); col++)
-	{
+	for(col++; col < line.size(); col++) {
 		char c = line[col];
 		if(c == ' ') return; // no spaces in template ids
 		if(c == '}') break;
@@ -172,28 +176,30 @@ void parse_template(parserResult& result, std::uint_fast8_t& flag)
 	*result.col = col;
 }
 
-std::uint_fast8_t parse_html(
-        std::string line, std::vector<parserResult>& results, 
-        size_t row, std::string& content
-    )
+std::uint_fast8_t tokenizer(
+	std::vector<parserResult>& results, 
+	std::string line, 
+	size_t row, 
+	std::string& content
+)
 {
-    size_t col = 0;
+	size_t col = 0;
 	std::string temp_line;
 	std::uint_fast8_t flag{};
 	parserResult result{};
 	result.row = &row;
 	result.col = &col;
 	result.line = &line;
-	
+
 	parser* parse;
 	size_t loc = 0;
 	std::vector<genericTemplate> g_temp;
 	bool temp_bool = false;
 
-	for(; col < line.size(); col++)
-	{
+	for(; col < line.size(); col++) {
 		char& c = line[col];
-		if(parser_map.find(c) != parser_map.end()) {
+		if(parser_map.find(c) != parser_map.end()) 
+		{
 			parse = parser_map[c];
 			parse(result, flag);
 			if(!(flag & _tag))
@@ -201,7 +207,7 @@ std::uint_fast8_t parse_html(
 				result.tag.row = row;
 				result.tag.col = col;
 				results.push_back(result);
-				
+
 				temp_bool = result.temp_bool;
 
 				result = {};
@@ -214,8 +220,8 @@ std::uint_fast8_t parse_html(
 			content += c;
 		}
 
-		if(temp_bool) {
-			std::cout << "-- erasing {" << std::endl;
+		if(temp_bool) 
+		{
 			content.erase(content.end()-1);
 			temp_bool = false;
 		}
@@ -226,12 +232,12 @@ std::uint_fast8_t parse_html(
 
 Dom* create_template(std::vector<std::string> lines)
 {
-    std::cout << "creating template...\n";
+	std::cout << "creating template...\n";
 	std::uint_fast8_t flag{}; // all states turned off to start
 	std::vector<parserResult> results;
-    std::stack<std::string> content_stack;
+	std::stack<std::string> content_stack;
 	std::string content;
-	
+
 	bool temp_bool = false;
 	std::stack<std::vector<genericTemplate>> temp_stack;
 	std::vector<genericTemplate> temp;
@@ -244,13 +250,11 @@ Dom* create_template(std::vector<std::string> lines)
 
 	dom.push(nullptr);
 
-	for(size_t row = 0; row < lines.size(); row++)
-	{
+	for(size_t row = 0; row < lines.size(); row++) {
 		std::string line = lines[row];
-		parse_html(line, results, row, content);
+		tokenizer(results, line, row, content);
 
-		for(size_t i = 0; i < results.size(); i++)
-		{
+		for(size_t i = 0; i < results.size(); i++) {
 			parserResult r = results[i];
 			temp_bool = r.temp_bool;
 			if(temp_bool) temp = r.tag.temp_contents;
@@ -261,30 +265,30 @@ Dom* create_template(std::vector<std::string> lines)
 			{
 				current_dom = new Dom(r.tag, prev_dom);
 				current_dom->start_linenum = row;
-				if(prev_dom != nullptr) {
-					prev_dom->add_child(current_dom);
-				}
-				if(!r.tag.is_single) {
+				if(prev_dom != nullptr) prev_dom->add_child(current_dom);
+				if(!r.tag.is_single) 
+				{
 					dom.push(current_dom);
 				} else {
 					root = current_dom;
 				}
 
-                if(!r.tag.is_single) 
+				if(!r.tag.is_single) 
 				{
-                    content_stack.push(content);
+					content_stack.push(content);
 					temp_stack.push(temp);
 					temp.clear();
 					content = "";
-                }
+				}
 			} else if(prev_dom != nullptr && ("/" + prev_dom->get_name()) == r.tag.name) {
 				prev_dom->end_linenum = row;
 
 				if(remove_spaces(content) != "") 
 				{
-					if (content_stack.size() <= 0) {
-					prev_dom->add_content(content);
-					content = "";
+					if (content_stack.size() <= 0) 
+					{
+						prev_dom->add_content(content);
+						content = "";
 					} else {
 						prev_dom->add_content(content);
 						content = content_stack.top();
@@ -292,7 +296,8 @@ Dom* create_template(std::vector<std::string> lines)
 					}
 				}	
 
-				if (temp_stack.size() <= 0) {
+				if (temp_stack.size() <= 0) 
+				{
 					prev_dom->add_template(temp);
 					temp.clear();
 				} else {
@@ -318,12 +323,13 @@ Dom* create_template(std::vector<std::string> lines)
 
 Dom* parse_create_template(std::string path)
 {
-    std::vector<std::string> lines;
+	std::vector<std::string> lines;
 
 	FileReader fr;
 	std::cout << "reading template file: " << path << "\n\n";
 	bool opened = fr.readFile(&lines, path.c_str());
-	if (!opened) {
+	if (!opened) 
+	{
 		std::cout << "failed to read file: " << path << "\n\n";
 		return nullptr;
 	}

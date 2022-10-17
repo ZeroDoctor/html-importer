@@ -20,7 +20,7 @@ public:
 
 		for(const auto & entry : std::filesystem::directory_iterator(path)) 
 		{
-			if(entry.is_directory()) continue; // could recurse here
+			if(entry.is_directory()) continue; // could recurse here but best not
 
 			std::string file = entry.path().string();
 

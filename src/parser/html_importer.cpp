@@ -3,7 +3,7 @@
 namespace sdom = simdjson::dom;
 
 void output() {
-	
+
 }
 
 Dom* include_component() {
@@ -16,9 +16,9 @@ Dom* include_component() {
 }
 
 void process_component(
-		std::string src, std::string type, std::vector<sdom::object> objects,
-		std::unordered_map<std::string, Dom *> &files_load
-	)
+	std::string src, std::string type, std::vector<sdom::object> objects,
+	std::unordered_map<std::string, Dom *> &files_load
+)
 {
 	Dom *dom;
 	if (files_load.find(src) == files_load.end()) {
@@ -36,7 +36,7 @@ void process_component(
 		}
 	}
 
-	auto tags = dom->find_all("div");
+	auto tags = dom->find_all("component");
 	for (auto tag : tags)
 	{
 		std::unordered_map<std::string, std::string> v_attr;
@@ -45,6 +45,7 @@ void process_component(
 		{
 			tag->set_temp_values(obj_map);
 			tag->print_all();
+			std::cout << "--------------\n";
 		}
 	}
 }
@@ -82,13 +83,19 @@ void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_loa
 			bool has_content = tag->get_content(content);
 
 			std::string file = v_attr["path"];
-			if(file == "") {
+			if(file == "") 
+			{
 				std::cerr << "Error include: failed to find file path: " << file + "\n";
+				return;
+			}
+
+			if (v_attr.find("type") == v_attr.end()) 
+			{
+				std::cerr << "Error include [<" << tag->start_linenum << "]: failed to find type: " << file + "\n";
 				return;
 			}
 			std::string type = v_attr["type"]; 
 
-			// TODO: handle dom when 'type' attribute is not found (a.k.a insert the whole component file)
 			if (has_content) 
 			{
 				sdom::parser parser;
@@ -108,7 +115,7 @@ void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_loa
 
 				process_component(src, type, objects, files_load);
 			}
-			
+
 		}
 	}
 }

@@ -62,10 +62,12 @@ void parse_attr(parserResult& result, std::uint_fast8_t& flag);
 // parse_template reads a single line as a potential template
 void parse_template(parserResult& result, std::uint_fast8_t& flag);
 
-std::uint_fast8_t parse_html(
-		std::string line, std::vector<parserResult> &results,
-		size_t row, std::string& content // this could change
-	);
+std::uint_fast8_t tokenizer(
+	std::vector<parserResult> &results,
+	std::string line, 
+	size_t row, 
+	std::string& content // this could change
+);
 
 Dom* create_template(std::vector<std::string> lines);
 
