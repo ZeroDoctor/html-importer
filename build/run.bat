@@ -3,7 +3,7 @@
 echo Running...
 
 cd Debug
-import-html-template.exe %*
+zdhtml.exe %*
 cd ..
 
 echo Running - Done!
