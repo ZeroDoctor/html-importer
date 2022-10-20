@@ -1,24 +1,24 @@
 #pragma once
 
+#include <cctype>
 #include <vector>
 #include <string>
 
 inline const char* EMPTY_TAG_NAME = "!--empty--";
-inline const char* COMMENT_TAG_NAME = "!--comment--";
 
 enum TokenType {
-	TOKEN_NOTHING,
-	TOKEN_START_TAG,
-	TOKEN_END_TAG,
-	TOKEN_ATTRIBUTE,
 	TOKEN_CONTENT,
-	TOKEN_START_COMMENT,
-	TOKEN_END_COMMENT,
+	TOKEN_TAG_LESS,
+	TOKEN_TAG_GREATER,
+	TOKEN_COMMENT_LESS,
+	TOKEN_COMMENT_GREATER,
+	TOKEN_TAG_NAME,
+	TOKEN_ATTRIBUTE,
 };
 
 struct Token {
-	TokenType type = TOKEN_NOTHING;
-	std::string token = "";
+	TokenType type = TOKEN_CONTENT;
+	std::string text = "";
 	
 	size_t start_row = -1;
 	size_t start_col = -1;
@@ -27,7 +27,7 @@ struct Token {
 	size_t end_col = -1;
 
 	bool is_complete() {
-		return (type == TOKEN_NOTHING) || end_row != -1 && end_col != -1;
+		return (type == TOKEN_CONTENT) || end_row != -1 && end_col != -1;
 	}
 };
 
@@ -39,17 +39,35 @@ public:
 private:
 	~Lexer();
 
-	void process_tag(Token& current_token, std::string line);
-	void process_attribute(Token& current_token, std::string line);
-	void process_content(Token& current_token, std::string line);
+	std::vector<Token> process_tag(Token& previous_token, std::string line);
+	std::vector<Token> process_comment(Token& previous_token, std::string line);
+	std::vector<Token> process_tag_name(Token& previous_token, std::string line);
+	std::vector<Token> process_attribute(Token& previous_token, std::string line);
+	std::vector<Token> process_content(std::string line);
 
 	inline size_t first_non_space(std::string line, size_t pos) {
+		size_t result = std::string::npos;
+		
+		size_t col = pos;
+		while(col < line.length()) {
+			if(!std::isspace(line[col]))
+				return col;
+			
+			col++;
+		}
+		
+		return result;
+	}
+
+	inline size_t first_valid_tag_name(std::string line, size_t pos) {
 		size_t result = std::string::npos;
 
 		size_t col = pos;
 		while(col < line.length()) {
-			if(!isspace(line[col]))
+			if(!std::isspace(line[col]) && std::isalnum(line[col]))
 				return col;
+			else if(!std::isspace(line[col]) && !std::isalnum(line[col]))
+				return result;
 			
 			col++;
 		}
