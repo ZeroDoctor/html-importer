@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.2)
 
 project(zdhtml)
 
+add_subdirectory(vendor)
+
 if (UNIX)
-	set(CMAKE_CXX_FLAGS "-std=c++17 -lstdc++fs")
+  set(CMAKE_CXX_FLAGS "-std=c++17 -lstdc++fs")
 endif()
 
 file(GLOB source "src/*.cpp")
@@ -29,13 +31,17 @@ add_executable(zdhtml
 
 target_include_directories(zdhtml PRIVATE 
   "./src"
-)
+  )
 
 if(WIN32)
-	target_compile_options(zdhtml PRIVATE "-std:c++17")
+  target_compile_options(zdhtml PRIVATE "-std:c++17")
 endif()
 
 if (UNIX)
-    target_link_libraries(zdhtml stdc++fs)
-    target_link_libraries(zdhtml pthread)
+  target_link_libraries(zdhtml PRIVATE stdc++fs)
+  target_link_libraries(zdhtml PRIVATE pthread)
 endif()
+
+# vendor libraries
+target_link_libraries(zdhtml PRIVATE spdlog::spdlog)
+

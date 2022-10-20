@@ -6,9 +6,7 @@
 #include <string>
 #include <filesystem>
 
-class FileReader
-{
-
+class FileReader {
 public:
 	std::vector<std::string> getListFiles(const char* path)
 	{
@@ -26,7 +24,7 @@ public:
 
 			if (file.find(".html") == std::string::npos) continue;
 
-				result.push_back(file);
+			result.push_back(file);
 		}
 
 		return result;
@@ -46,7 +44,7 @@ public:
 			}
 
 			infile.close();
-			
+
 			return true;
 		}
 
