@@ -1,9 +1,5 @@
-#include <array>
-#include <stack>
-#include <chrono>
-
+#include "parser/tokenizer.hpp"
 #include "spdlog/spdlog.h"
-#include "util/pretty_console.hpp"
 #include "util/argh.h"
 #include "parser/html_importer.hpp"
 
@@ -31,6 +27,19 @@ int main(int argc, char** argv)
 		spdlog::info("loaded [file={}]", dst);
 	}
 
+	std::vector<std::string> lines = {
+		"<div>", 
+			"whatever content in here", 
+		"</div>"
+	};
+
+	Lexer lexer; 
+	std::vector<Token> tokens = lexer.tokenizer(lines);
+
+	for(auto token : tokens) {
+		std::cout << token.to_string() << std::endl;
+	}
+	
 
 	return 0;
 }
