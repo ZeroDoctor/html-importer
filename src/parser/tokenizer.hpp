@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <stdexcept>
+#include "spdlog/spdlog.h"
 
 // TODO: move this later
 template<typename ... Args>
@@ -69,10 +70,9 @@ struct Token {
 	}
 
 	std::string to_string() {
-		printf(
+		return string_format(
 			"[start_row=%d] [start_col=%d] [text=%s] [end_row=%d] [end_col=%d] [type=%d]", 
 			start_row, start_col, text.c_str(), end_row, end_col, type);
-		return "";
 	}
 };
 
@@ -88,7 +88,7 @@ private:
 	std::vector<Token> process_comment(Token& previous_token, std::string line);
 	std::vector<Token> process_tag_name(Token& previous_token, std::string line);
 	std::vector<Token> process_attribute(Token& previous_token, std::string line);
-	std::vector<Token> process_content(std::string line);
+	std::vector<Token> process_content(Token& previous_token, std::string line);
 
 	inline size_t first_non_space(std::string line, size_t pos) 
 	{

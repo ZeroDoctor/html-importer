@@ -1,4 +1,5 @@
 #include "parser/tokenizer.hpp"
+#include "spdlog/common.h"
 #include "spdlog/spdlog.h"
 #include "util/argh.h"
 #include "parser/html_importer.hpp"
@@ -13,6 +14,8 @@ void usage()
 
 int main(int argc, char** argv)
 {
+	spdlog::set_level(spdlog::level::debug);
+	
 	auto cmdl = argh::parser(argc, argv);
 
 	const std::string dst = cmdl[1];
