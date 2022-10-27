@@ -31,8 +31,10 @@ int main(int argc, char** argv)
 	}
 
 	std::vector<std::string> lines = {
-		"<div attr>", 
+		"<div attr='another one'>", 
 			"whatever content in here", 
+			"more content in here", 
+			"and even more content in here", 
 		"</div>"
 	};
 

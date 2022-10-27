@@ -292,6 +292,8 @@ std::vector<Token> Lexer::process_content(Token& previous_token, std::string lin
 	else if(previous_token.type == TOKEN_ATTRIBUTE_VALUE) return tokens;
 	else if(previous_token.type == TOKEN_CONTENT) 
 	{
+		if(previous_token.end_row != -1 && previous_token.end_row < m_row)
+			previous_token.text.push_back(' ');
 		previous_token.end_row = m_row;
 		previous_token.end_col = m_col;
 		previous_token.text.push_back(convert_space(line[m_col]));
