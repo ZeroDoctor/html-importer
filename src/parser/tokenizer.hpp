@@ -47,16 +47,24 @@ inline const char* EMPTY_TAG_NAME = "!--empty--";
 enum TokenType {
 	TOKEN_CONTENT=0,
 	TOKEN_TAG_LESS,
+	TOKEN_TAG_LESS_DASH,
 	TOKEN_TAG_GREATER,
+	TOKEN_TAG_NAME,
 	TOKEN_COMMENT_LESS,
 	TOKEN_COMMENT_GREATER,
-	TOKEN_TAG_NAME,
-	TOKEN_ATTRIBUTE,
+	TOKEN_ATTRIBUTE_NAME,
+	TOKEN_ATTRIBUTE_EQUAL,
 	TOKEN_ATTRIBUTE_VALUE,
+	TOKEN_ATTRIBUTE_VALUE_START,
+	TOKEN_ATTRIBUTE_VALUE_END,
 };
+
+const char SINGLE_QUOTE = '\'';
+const char DOUBLE_QUOTE = '"';
 
 struct Token {
 	TokenType type = TOKEN_CONTENT;
+	char attr_quote_type = ' ';
 	std::string text;
 	
 	size_t start_row = -1;
@@ -119,16 +127,20 @@ private:
 		return result;
 	}
 
-	inline size_t first_valid_tag_name(std::string line, size_t pos) 
+	inline size_t first_non_attr_name(std::string line, size_t pos) 
 	{
 		size_t result = std::string::npos;
 
 		size_t col = pos;
 		while(col < line.length()) {
-			if(!std::isspace(line[col]) && std::isalnum(line[col]))
-				return col;
-			else if(!std::isspace(line[col]) && !std::isalnum(line[col]))
-				return result;
+			if(
+				std::isspace(line[col]) || 
+				line[col] == '=' || 
+				line[col] == '>' || 
+				line[col] == '<' || 
+				line[col] == '"' || 
+				line[col] == '\''
+			) return col;
 			
 			col++;
 		}
