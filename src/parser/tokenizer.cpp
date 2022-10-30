@@ -284,12 +284,13 @@ std::vector<Token> Lexer::process_attribute(Token& previous_token, std::string l
 std::vector<Token> Lexer::process_content(Token& previous_token, std::string line) 
 {
 	std::vector<Token> tokens;
-	if(previous_token.type == TOKEN_TAG_LESS) return tokens;
-	else if(previous_token.type == TOKEN_TAG_LESS_DASH) return tokens;
-	else if(previous_token.type == TOKEN_TAG_NAME) return tokens;
-	else if(previous_token.type == TOKEN_ATTRIBUTE_NAME) return tokens;
-	else if(previous_token.type == TOKEN_ATTRIBUTE_VALUE_START) return tokens;
-	else if(previous_token.type == TOKEN_ATTRIBUTE_VALUE) return tokens;
+	if(previous_token.type == TOKEN_TAG_LESS ||
+		previous_token.type == TOKEN_TAG_LESS_DASH ||
+		previous_token.type == TOKEN_TAG_NAME ||
+		previous_token.type == TOKEN_ATTRIBUTE_NAME ||
+		previous_token.type == TOKEN_ATTRIBUTE_VALUE_START ||
+		previous_token.type == TOKEN_ATTRIBUTE_VALUE
+	) return tokens;
 	else if(previous_token.type == TOKEN_CONTENT) 
 	{
 		if(previous_token.end_row != -1 && previous_token.end_row < m_row)
