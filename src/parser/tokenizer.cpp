@@ -23,7 +23,7 @@ std::vector<Token> Lexer::tokenizer(std::vector<std::string> lines)
 	for(auto line : lines) {
 		m_current_line_length = line.length();
 		
-		spdlog::debug("line={}", line.c_str());
+		spdlog::debug("reading [line={}]", line.c_str());
 		while(m_col < m_current_line_length) {
 			std::vector<Token> temp = process_tag(getPreviousToken(tokens), line);
 			tokens.insert(tokens.end(), temp.begin(), temp.end());
@@ -68,8 +68,16 @@ std::vector<Token> Lexer::process_tag(Token& previous_token, std::string line)
 
 	if(previous_token.type == TOKEN_CONTENT) 
 	{
-		previous_token.end_col = m_col;
+		if(line[m_col]=='>' && previous_token.text == "/") {
+			previous_token.type = TOKEN_TAG_GREATER_DASH;
+		}
+		
+		previous_token.end_col = m_col-1;
 		previous_token.end_row = m_row;
+
+		if(previous_token.end_col == -1) {
+			previous_token.end_col = previous_token.start_col + previous_token.text.size();
+		}
 	}
 
 	Token token = {};
@@ -266,7 +274,7 @@ std::vector<Token> Lexer::process_attribute(Token& previous_token, std::string l
 		end_col_temp = m_current_line_length;
 	}
 	std::string text = line.substr(m_col, end_col_temp - m_col);
-	
+
 	Token token = {};
 	token.type = TOKEN_ATTRIBUTE_NAME;
 	token.start_row = m_row;
@@ -291,8 +299,7 @@ std::vector<Token> Lexer::process_content(Token& previous_token, std::string lin
 		previous_token.type == TOKEN_ATTRIBUTE_VALUE_START ||
 		previous_token.type == TOKEN_ATTRIBUTE_VALUE
 	) return tokens;
-	else if(previous_token.type == TOKEN_CONTENT) 
-	{
+	else if(previous_token.type == TOKEN_CONTENT && (m_row != 0 || m_col != 0)) {
 		if(previous_token.end_row != -1 && previous_token.end_row < m_row)
 			previous_token.text.push_back(' ');
 		previous_token.end_row = m_row;
@@ -308,7 +315,7 @@ std::vector<Token> Lexer::process_content(Token& previous_token, std::string lin
 	token.start_col = m_col;
 	token.text.push_back(convert_space(line[m_col]));
 	tokens.push_back(token);
-	
+
 	m_col++;
 	return tokens;
 }

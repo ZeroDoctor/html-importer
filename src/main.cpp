@@ -15,6 +15,7 @@ void usage()
 int main(int argc, char** argv)
 {
 	spdlog::set_level(spdlog::level::debug);
+	spdlog::info("start program...");
 	
 	auto cmdl = argh::parser(argc, argv);
 
@@ -31,9 +32,13 @@ int main(int argc, char** argv)
 	}
 
 	std::vector<std::string> lines = {
+		" this should be content",
 		"<div attr='another one'>", 
 			"whatever content in here", 
-			"more content in here", 
+			"<div inner='woowowowo'>", 
+				"this is child content",
+			"</div>", 
+			"more content in here <melee>luigi there is nothing like doing nothing</melee>", 
 			"and even more content in here", 
 		"</div>"
 	};
@@ -42,9 +47,9 @@ int main(int argc, char** argv)
 	std::vector<Token> tokens = lexer.tokenizer(lines);
 
 	for(auto token : tokens) {
-		std::cout << token.to_string() << std::endl;
+		spdlog::debug("{}", token.to_string());
 	}
 	
-
+	spdlog::info("end program...");
 	return 0;
 }

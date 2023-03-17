@@ -1,6 +1,5 @@
-
-build/Debug/*
 build/*
+Debug/*
 compile_commands.json
 
 *.vcxproj
