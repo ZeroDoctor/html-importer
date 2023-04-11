@@ -12,12 +12,12 @@
 
 
 // could remove this struct
-struct attribute {
+struct Attribute {
 	std::string name = "";
 	std::string value = "";
 };
 
-struct genericTemplate {
+struct Template {
 	std::string id = "";
 	size_t row = size_t(-1);
 	size_t col = size_t(-1);
@@ -28,18 +28,17 @@ struct genericTemplate {
 	}
 };
 
-struct genericTag {
+struct Tag {
 	std::string name = "";
 	std::string content = ""; // imagine content taking up the whole std::string... crazy, not impossible but... still crazy
-	bool is_start = false;
 	bool is_single = false;
 	size_t row = size_t(-1);
 	size_t col = size_t(-1);
 
 	std::unordered_map<std::string, std::string> attrs;
-	std::vector<genericTemplate> temp_contents;
+	std::vector<Template> temp_contents;
 
-	bool has_template(std::vector<genericTemplate>& out) 
+	bool has_template(std::vector<Template>& out) 
 	{
 		if(temp_contents.size() >= 1) 
 		{
@@ -71,7 +70,7 @@ inline std::string remove_spaces(std::string str)
 
 class Dom {
 private:
-	genericTag self;
+	Tag self;
 	Dom *parent;
 	std::vector<Dom *> children;
 
@@ -82,7 +81,7 @@ public:
 	size_t start_linenum = -1;
 	size_t end_linenum = -1;
 
-	Dom(genericTag s, Dom *p) : self(s), parent(p){};
+	Dom(Tag s, Dom *p) : self(s), parent(p){};
 
 	Dom *find(std::string str);
 	std::vector<Dom *> find_all(std::string str);
@@ -97,8 +96,9 @@ public:
 	bool get_content(std::string &content);
 	void add_content(std::string content);
 	std::vector<Dom*> find_all_templates(); // not implemented yet
-	void add_template(std::vector<genericTemplate> temp);
+	void add_template(std::vector<Template> temp);
 	void set_temp_values(std::unordered_map<std::string, std::string> obj_map);
+	Tag get_self();
 
 	// only root
 	void set_file_name(std::string file);

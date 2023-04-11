@@ -3,7 +3,7 @@
 #include <unordered_map>
 
 #include "thread/thread_pool.hpp"
-#include "parser/template_parser.hpp"
+#include "dom.hpp"
 
 class HtmlImporter
 {

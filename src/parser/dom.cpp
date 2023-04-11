@@ -76,7 +76,7 @@ void Dom::print_all()
 		std::cout << "\tContent: " << content << "\n";
 	}
 
-	std::vector<genericTemplate> temp;
+	std::vector<Template> temp;
 	if (this->self.has_template(temp)) {
 		for(auto t : temp) {
 			std::cout << "\tID: " << t.id << "\tRow: " << t.row << "\tCol: " << t.col << std::endl;
@@ -132,7 +132,7 @@ bool Dom::get_content(std::string &content)
 
 void Dom::add_content(std::string content) { self.content += content; }
 
-void Dom::add_template(std::vector<genericTemplate> temp) 
+void Dom::add_template(std::vector<Template> temp) 
 {
 	for (auto t : temp) {
 		this->self.temp_contents.push_back(t);
@@ -142,7 +142,7 @@ void Dom::add_template(std::vector<genericTemplate> temp)
 void Dom::set_temp_values(std::unordered_map<std::string, std::string> obj_map)
 {
 	std::queue<Dom *> q;
-	std::vector<genericTemplate> gen_temp;
+	std::vector<Template> gen_temp;
 	q.push(this);
 
 	while (!q.empty())
@@ -162,6 +162,8 @@ void Dom::set_temp_values(std::unordered_map<std::string, std::string> obj_map)
 			q.push(child);
 	}
 }
+
+Tag Dom::get_self() { return self; }
 
 std::string Dom::get_file_name() { return file_name; }
 void Dom::set_file_name(std::string file) { file_name = file; }

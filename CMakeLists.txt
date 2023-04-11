@@ -27,8 +27,6 @@ add_executable(zdhtml
   "${thread_include}"
   )
 
-# cmake -DCMAKE_CXX_COMPILER=g++-8
-
 target_include_directories(zdhtml PRIVATE 
   "./src"
   )

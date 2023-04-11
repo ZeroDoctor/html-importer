@@ -22,7 +22,7 @@ void process_component(
 {
 	Dom *dom;
 	if (files_load.find(src) == files_load.end()) {
-		dom = parse_create_template(src);
+		dom = nullptr; //parse_create_template(src);
 		if(dom == nullptr) return;
 		files_load[src] = dom;
 	} else {
@@ -110,7 +110,7 @@ void process_include(Dom *dom, std::unordered_map<std::string, Dom *> &files_loa
 				std::vector<sdom::object> objects;
 				parse_json(objects, elem);
 
-				std::filesystem::path root(path);
+				// std::filesystem::path root(path);
 				std::string src = "./" + file;
 
 				process_component(src, type, objects, files_load);

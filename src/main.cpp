@@ -3,6 +3,7 @@
 #include "spdlog/spdlog.h"
 #include "util/argh.h"
 #include "parser/html_importer.hpp"
+#include "util/read_file.hpp"
 
 #define TSIZE 7
 
