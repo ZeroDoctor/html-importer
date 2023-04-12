@@ -1,6 +1,5 @@
 build/*
 Debug/*
-compile_commands.json
 
 *.vcxproj
 *.vcxproj.*
@@ -9,6 +8,6 @@ compile_commands.json
 *.dir
 .fake
 
-.cache/*
+.cache
 .ionide/*
 .vscode/*
