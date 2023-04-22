@@ -11,3 +11,5 @@ Debug/*
 .cache
 .ionide/*
 .vscode/*
+
+compile_commands.json
