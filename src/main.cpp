@@ -34,7 +34,10 @@ int main(int argc, char** argv)
 
 	std::vector<std::string> lines = {
 		" this should be content",
-		"<div attr='another one'>", 
+		"<!-- the knew!! -->", 
+		"<image src='https://img.zerodoc.dev/v1/test'/>",
+		"<image />",
+		"<div attr='another one, but was there?'>",
 			"whatever content in here", 
 			"<div inner='woowowowo'>", 
 				"this is child content",

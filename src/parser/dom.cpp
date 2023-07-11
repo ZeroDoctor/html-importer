@@ -172,6 +172,6 @@ Dom::~Dom()
 {
 	std::cout << "removing " << this->get_name() << std::endl;
 	for (auto child : this->children) {
-		delete (child);
+		delete child;
 	}
 }

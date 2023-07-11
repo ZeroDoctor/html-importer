@@ -9,7 +9,7 @@ Token& getPreviousToken(std::vector<Token>& tokens) {
 	if(tokens.size() > 0) {
 		return tokens[tokens.size()-1];
 	}
-	
+
 	return empty;
 }
 
@@ -22,37 +22,37 @@ std::vector<Token> Lexer::tokenizer(std::vector<std::string> lines)
 
 	for(auto line : lines) {
 		m_current_line_length = line.length();
-		
+
 		spdlog::debug("reading [line={}]", line.c_str());
 		while(m_col < m_current_line_length) {
 			std::vector<Token> temp = process_tag(getPreviousToken(tokens), line);
 			tokens.insert(tokens.end(), temp.begin(), temp.end());
 			if(m_col >= m_current_line_length) break;
 			if(temp.size() > 0) continue;
-			
+
 			temp = process_tag_name(getPreviousToken(tokens), line);
 			tokens.insert(tokens.end(), temp.begin(), temp.end());
 			if(m_col >= m_current_line_length) break;
 			if(temp.size() > 0) continue;
-			
+
 			temp = process_comment(getPreviousToken(tokens), line);
 			tokens.insert(tokens.end(), temp.begin(), temp.end());
 			if(m_col >= m_current_line_length) break;
 			if(temp.size() > 0) continue;
-			
+
 			temp = process_attribute(getPreviousToken(tokens), line);
 			tokens.insert(tokens.end(), temp.begin(), temp.end());
 			if(m_col >= m_current_line_length) break;
 			if(temp.size() > 0) continue;
-			
+
 			temp = process_content(getPreviousToken(tokens), line);
 			tokens.insert(tokens.end(), temp.begin(), temp.end());
 		}
-		
+
 		m_col = 0;
 		m_row++;	
 	}
-	
+
 	return tokens;
 }
 
@@ -60,18 +60,33 @@ std::vector<Token> Lexer::tokenizer(std::vector<std::string> lines)
 std::vector<Token> Lexer::process_tag(Token& previous_token, std::string line) 
 {
 	std::vector<Token> tokens;
-	
+
 	if(line[m_col]!='<'&& line[m_col]!='>') return tokens;
-	// else if(m_col+3 < m_current_line_length && line.substr(m_col+1, 3) == "!--") return tokens;
+	else if(m_col+2 < m_current_line_length && line.substr(m_col, 3) == "!--") return tokens;
 	else if(previous_token.type == TOKEN_ATTRIBUTE_VALUE_START) return tokens;
 	else if(previous_token.type == TOKEN_COMMENT_LESS) return tokens;
+
+	if(previous_token.type == TOKEN_COMMENT_CONTENT)
+	{
+		Token token = {};
+		token.start_row = m_row;
+		token.start_col = m_col;
+		token.end_row = m_row;
+		token.end_col = m_col;
+		token.type = TOKEN_COMMENT_GREATER;
+		token.text.push_back(convert_space(line[m_col]));
+		tokens.push_back(token);
+
+		m_col++;
+		return tokens;
+	}
 
 	if(previous_token.type == TOKEN_CONTENT) 
 	{
 		if(line[m_col]=='>' && previous_token.text == "/") {
 			previous_token.type = TOKEN_TAG_GREATER_DASH;
 		}
-		
+
 		previous_token.end_col = m_col-1;
 		previous_token.end_row = m_row;
 
@@ -88,14 +103,13 @@ std::vector<Token> Lexer::process_tag(Token& previous_token, std::string line)
 	token.end_col = m_col;
 	token.text = "";
 	token.text.push_back(convert_space(line[m_col]));
-	if (token.text == "<") 
-	{
+	if (token.text == "<") {
 		token.type = TOKEN_TAG_LESS;
 	} else if (token.text == ">") {
 		token.type = TOKEN_TAG_GREATER;
 	}
 	tokens.push_back(token);
-	
+
 	m_col++;
 	return tokens;
 }
@@ -103,7 +117,7 @@ std::vector<Token> Lexer::process_tag(Token& previous_token, std::string line)
 std::vector<Token> Lexer::process_tag_name(Token& previous_token, std::string line)  
 {
 	std::vector<Token> tokens;
-	
+
 	if(previous_token.type != TOKEN_TAG_LESS && previous_token.type != TOKEN_TAG_LESS_DASH) return tokens;
 	else if(previous_token.type == TOKEN_ATTRIBUTE_VALUE_START) return tokens;
 	else if(m_col+2 < m_current_line_length && line.substr(m_col, 3) == "!--") return tokens;
@@ -120,7 +134,7 @@ std::vector<Token> Lexer::process_tag_name(Token& previous_token, std::string li
 		tokens.push_back(token);
 		m_col++;
 	}
-	
+
 	std::string name = "";
 	while(m_col < m_current_line_length && std::isalnum(line[m_col])) {
 		name += line[m_col];
@@ -138,7 +152,7 @@ std::vector<Token> Lexer::process_tag_name(Token& previous_token, std::string li
 		token.type = TOKEN_TAG_NAME;
 		tokens.push_back(token);
 	}
-	
+
 	return tokens;
 }
 
@@ -146,12 +160,16 @@ std::vector<Token> Lexer::process_comment(Token& previous_token, std::string lin
 {
 	std::vector<Token> tokens = {};
 	if(previous_token.type != TOKEN_TAG_LESS) return tokens;
-	else if(previous_token.type == TOKEN_ATTRIBUTE_VALUE_START) return tokens;
+	else if(previous_token.type == TOKEN_ATTRIBUTE_VALUE_START || 
+		previous_token.type == TOKEN_COMMENT_CONTENT ||
+		previous_token.type == TOKEN_COMMENT_LESS ||
+		previous_token.type == TOKEN_COMMENT_GREATER
+		) return tokens;
 	else if(m_col+2 < m_current_line_length && line.substr(m_col, 3) != "!--") return tokens;
-	
+
 	previous_token.type = TOKEN_COMMENT_LESS;
 	previous_token.end_col = m_col;
-	
+
 	m_col++;
 	return tokens;
 }
@@ -166,7 +184,7 @@ std::vector<Token> Lexer::process_attribute(Token& previous_token, std::string l
 		previous_token.type != TOKEN_ATTRIBUTE_VALUE &&
 		previous_token.type != TOKEN_ATTRIBUTE_VALUE_START &&
 		previous_token.type != TOKEN_ATTRIBUTE_VALUE_END
-	) return tokens;
+		) return tokens;
 
 	switch (previous_token.type) {
 		case TOKEN_ATTRIBUTE_VALUE:
@@ -180,11 +198,11 @@ std::vector<Token> Lexer::process_attribute(Token& previous_token, std::string l
 				token.end_col = m_col;
 				token.text.push_back(convert_space(line[m_col]));
 				tokens.push_back(token);
-				
+
 				m_col++;
 				return tokens;
 			}
-			
+
 			previous_token.text.push_back(convert_space(line[m_col]));
 			previous_token.end_row = m_row;
 			previous_token.end_col = m_col;	
@@ -196,8 +214,8 @@ std::vector<Token> Lexer::process_attribute(Token& previous_token, std::string l
 			{
 				previous_token.end_row = m_row;
 				previous_token.end_col = m_col;	
-				
-				
+
+
 				Token token = {};
 				token.type = TOKEN_ATTRIBUTE_VALUE_START;
 				token.start_row = m_row;
@@ -206,7 +224,7 @@ std::vector<Token> Lexer::process_attribute(Token& previous_token, std::string l
 				token.end_col = m_col;
 				token.text.push_back(convert_space(line[m_col]));
 				tokens.push_back(token);
-				
+
 				m_col++;
 				return tokens;
 			}
@@ -235,7 +253,7 @@ std::vector<Token> Lexer::process_attribute(Token& previous_token, std::string l
 				token.attr_quote_type = previous_token.text[0];
 				token.text.push_back(line[m_col]);
 				tokens.push_back(token);
-				
+
 				m_col++;
 				return tokens;
 			}
@@ -245,7 +263,7 @@ std::vector<Token> Lexer::process_attribute(Token& previous_token, std::string l
 			{
 				previous_token.end_row = m_row;
 				previous_token.end_col = m_col;
-				
+
 				Token token = {};
 				token.type = TOKEN_ATTRIBUTE_EQUAL;
 				token.start_row = m_row;
@@ -259,12 +277,27 @@ std::vector<Token> Lexer::process_attribute(Token& previous_token, std::string l
 			m_col++;
 			return tokens;
 		break;
+		default:
+			spdlog::debug("unexpected token in process_attribute [token_type={}]", previous_token.type);
 	}
 
 	if(std::isspace(line[m_col]))
 	{
 		m_col++;
 		return tokens;
+	}
+	
+	if(line[m_col] == '/')
+	{
+		Token token = {};
+		token.start_row = m_row;
+		token.start_col = m_col;
+		token.end_row = m_row;
+		token.end_col = m_col;
+		token.type = TOKEN_TAG_GREATER_DASH;
+		token.text = line[m_col];
+		tokens.push_back(token);
+		m_col++;
 	}
 
 	size_t end_col_temp = first_non_attr_name(line, m_col);
@@ -292,21 +325,53 @@ std::vector<Token> Lexer::process_attribute(Token& previous_token, std::string l
 std::vector<Token> Lexer::process_content(Token& previous_token, std::string line) 
 {
 	std::vector<Token> tokens;
-	if(previous_token.type == TOKEN_TAG_LESS ||
-		previous_token.type == TOKEN_TAG_LESS_DASH ||
-		previous_token.type == TOKEN_TAG_NAME ||
-		previous_token.type == TOKEN_ATTRIBUTE_NAME ||
-		previous_token.type == TOKEN_ATTRIBUTE_VALUE_START ||
-		previous_token.type == TOKEN_ATTRIBUTE_VALUE
-	) return tokens;
-	else if(previous_token.type == TOKEN_CONTENT && (m_row != 0 || m_col != 0)) {
-		if(previous_token.end_row != -1 && previous_token.end_row < m_row)
-			previous_token.text.push_back(' ');
-		previous_token.end_row = m_row;
-		previous_token.end_col = m_col;
-		previous_token.text.push_back(convert_space(line[m_col]));
-		m_col++;
-		return tokens;
+	switch(previous_token.type) {
+		case TOKEN_TAG_LESS:
+		case TOKEN_TAG_LESS_DASH:
+		case TOKEN_TAG_NAME:
+		case TOKEN_ATTRIBUTE_NAME:
+		case TOKEN_ATTRIBUTE_VALUE_START:
+		case TOKEN_ATTRIBUTE_VALUE:
+			return tokens;
+		break;
+		case TOKEN_COMMENT_LESS:
+			{
+				Token token = {};
+				token.type = TOKEN_COMMENT_CONTENT;
+				token.start_row = m_row;
+				token.start_col = m_col;
+				token.text.push_back(convert_space(line[m_col]));
+				tokens.push_back(token);
+			}
+
+			m_col++;
+			return tokens;
+		break;
+		case TOKEN_COMMENT_GREATER: return tokens; break;
+		case TOKEN_COMMENT_CONTENT:
+			if(m_row != 0 || m_col != 0) {
+				if(previous_token.end_row != -1 && previous_token.end_row < m_row)
+					previous_token.text.push_back(' ');
+				previous_token.end_row = m_row;
+				previous_token.end_col = m_col;
+				previous_token.text.push_back(convert_space(line[m_col]));
+				m_col++;
+				return tokens;
+			}
+		break;
+		case TOKEN_CONTENT:
+			if(m_row != 0 || m_col != 0) {
+				if(previous_token.end_row != -1 && previous_token.end_row < m_row)
+					previous_token.text.push_back(' ');
+				previous_token.end_row = m_row;
+				previous_token.end_col = m_col;
+				previous_token.text.push_back(convert_space(line[m_col]));
+				m_col++;
+				return tokens;
+			}
+		break;
+		default:
+		break;
 	}
 
 	Token token = {};
